@@ -1,9 +1,8 @@
 # luigibot
 ## A bot to replicate /r/askouija on Discord
 This bot replicates /r/askouija where people can only respond with one letter at a time and must create a phrase to respond to the question/statment said.
-
-To ask a question use o!ask (question). If you want a fill in the blanks part in your question add '{}' where you want the blank.
-
+-To ask a question use o!ask (question). If you want a fill in the blanks part in your question add '{}' where you want the blank.
+-To end the question you type 'goodbye' or 'Goodbye' and it will mention the user that asked the question saying the answer in an embed
 ## To work the channel must:
 * Be named 'ask-ouija'
 * Luigi must have permissions to, read messages, read message history, send messages, add reactions and manage messages.
