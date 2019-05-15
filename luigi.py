@@ -74,15 +74,21 @@ async def on_message(message):
             if length == 1:
                 if message.author != user:
                     if message.author != prevuser:
-                        answer = answer.replace('{}', message.content + '{}')
-                        embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
-                        await message.add_reaction('✅')
-                        await msg.edit(embed=embed)
-                        embed.clear_fields()
-                        prevuser = message.author
-                        setprevuser(message.channel.id,prevuser)
-                        setanswer(message.channel.id,answer)
-                        time.sleep(0.5)
+                        if message.content != '{':
+                            answer = answer.replace('{}', message.content + '{}')
+                            embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
+                            await message.add_reaction('✅')
+                            await msg.edit(embed=embed)
+                            embed.clear_fields()
+                            prevuser = message.author
+                            setprevuser(message.channel.id,prevuser)
+                            setanswer(message.channel.id,answer)
+                            time.sleep(0.5)
+                        else:
+                            try:
+                                await message.delete()
+                            except:
+                                pass
                     else:
                         try:
                             await message.delete()
