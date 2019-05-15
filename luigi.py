@@ -9,7 +9,6 @@ import sys
 
 TOKEN = sys.argv[1]
 client = commands.Bot(command_prefix='o!')
-f = open("appcodes.txt")
 on = {}
 dontallowouija=0
 client.question = {}
@@ -337,7 +336,7 @@ async def servers(ctx):
 #async def getappcode(ctx):
 #    print(type(ctx.channel) is discord.DMChannel)
 #    if type(ctx.channel) is discord.DMChannel:
-#        global f
+#        f = open("appcodes.txt")
 #        listatm=eval(f.read())
 #        if ctx.author.id not in listatm.keys():
 #            while True:
@@ -358,7 +357,7 @@ async def servers(ctx):
 #@client.command()
 #@commands.is_owner()
 #async def getcodefor(ctx,number: int):
-#    global f
+#    f = open("appcodes.txt")
 #    if type(ctx.channel) is discord.DMChannel:
 #        listatm=eval(f.read())
 #        if number in listatm.values():
