@@ -19,4 +19,4 @@ There is also a feature to have a role that will get pinged when a new Question 
 
 Here's the bot invite link: [Bot Invite](https://discordapp.com/api/oauth2/authorize?client_id=557320040127397888&scope=bot&permissions=0)
 
-If you would like to host the bot yourself, clone the thing and run luigi.py either through the start.sh file already there (which you need to edit to add your bot token) or by running `python3 luigi.py BOT TOKEN` or `python3 luigi.py BOTTOKEN` (sometimes with ' it doesn't work idk why lol)
+If you would like to host the bot yourself, clone the thing and run luigi.py either through the start.sh file already there (which you need to edit to add your bot token) or by running `python3 luigi.py 'BOTTOKEN'` or `python3 luigi.py BOTTOKEN` (sometimes with ' it doesn't work idk why lol
