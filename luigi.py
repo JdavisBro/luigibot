@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import time
+import asyncio
 import random
 from discord.ext.commands import CommandNotFound
 import sys
@@ -83,7 +83,7 @@ async def on_message(message):
                             prevuser = message.author
                             setprevuser(message.channel.id,prevuser)
                             setanswer(message.channel.id,answer)
-                            time.sleep(0.5)
+                            await asyncio.sleep(0.5)
                         else:
                             try:
                                 await message.delete()
@@ -110,7 +110,7 @@ async def on_message(message):
                         prevuser = message.author
                         setprevuser(message.channel.id,prevuser)
                         setanswer(message.channel.id,answer)
-                        time.sleep(0.5)
+                        await asyncio.sleep(0.5)
                     else:
                         try:
                             await message.delete()
@@ -133,7 +133,7 @@ async def on_message(message):
                     msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
                     await message.channel.send(embed=embed)
                     await msg.unpin()
-                    time.sleep(0.5)
+                    await asyncio.sleep(0.5)
                     await msg1.delete()
                     answer = ''
                     logging.info('OFF in {}'.format(message.guild.name))
@@ -203,7 +203,7 @@ async def ask(ctx,*,question):
                             await msg.pin()
                         except:
                             pass
-                        time.sleep(0.5)
+                        await asyncio.sleep(0.5)
                         try:
                             await msg1.delete()
                         except:
@@ -221,14 +221,14 @@ async def ask(ctx,*,question):
                 else:
                     await channel.send("I don't have permissions to manage messages in this channel.")
             else:
-                time.sleep(0.5)
+                await asyncio.sleep(0.5)
                 logging.info('Somone attempted to start a Ouija in a channel that is not named "ask-ouija"')
         else:
             try:
                 await ctx.message.delete()
             except:
                 pass
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
             logging.info('Someone attempted to start a Ouija while one is already going,')
     else:
         await ctx.send("Ouija is not allowed to start as there is an update soon!")
@@ -246,16 +246,15 @@ async def role(ctx):
     'Gives you the Luigi role for pings when a new Ouija starts!'
     member = ctx.author
     try:
-        discord.utils.get(member.guild.roles, name='Luigi')
+        role = discord.utils.get(ctx.guild.roles, name='Luigi')
     except:
         msg=await ctx.send("This server doesn't have a Luigi role.")
-        time.sleep(10)
+        await asyncio.sleep(10)
         await msg.delete()
         return
     msg = await ctx.send('Ok, {} has been given the Luigi role!'.format(ctx.author.name))
-    role = discord.utils.get(member.guild.roles, name='Luigi')
     await member.add_roles(role)
-    time.sleep(10)
+    await asyncio.sleep(10)
     await msg.delete()
 
 @client.command()
@@ -263,17 +262,16 @@ async def unrole(ctx):
     'Removes the Luigi role if you have it (and if it exists in the server)!'
     member = ctx.author
     try:
-        discord.utils.get(member.guild.roles, name='Luigi')
+        role = discord.utils.get(ctx.guild.roles, name='Luigi')
     except:
         msg=await ctx.send("This server doesn't have a Luigi role.")
-        time.sleep(10)
+        await asyncio.sleep(10)
         await msg.delete()
         return
     msg=await ctx.send('Ok, {} has been removed from the Luigi role!'.format(ctx.author.name))
     member = ctx.author
-    role = discord.utils.get(member.guild.roles, name='Luigi')
     await member.remove_roles(role)
-    time.sleep(10)
+    await asyncio.sleep(10)
     await msg.delete()
 
 @client.command()
@@ -281,7 +279,7 @@ async def say(ctx, *, say):
     if ctx.author.id == 105725338541101056:
         await ctx.message.delete()
         await ctx.channel.trigger_typing()
-        time.sleep(0.5)
+        await asyncio.sleep(0.5)
         await ctx.send(say)
 
 @client.command()
@@ -302,7 +300,7 @@ async def updatesoon(ctx):
                 await channel.send("This Ouija will be shut down in 5 minutes as there will be an update soon.")
     if ouijasactive == 0:
         await ctx.send("Looks like there are no Ouija instances running!")
-    time.sleep(300) #SLEEP IS HERE IF YOU ARE WONDERING @JDAVISBRO
+    await asyncio.sleep(300)
     for id, oneorzero in on.items():
         if oneorzero == 1:
             channel = client.get_channel(id)
@@ -322,7 +320,7 @@ async def updatesoon(ctx):
             msg1 = await channel.send("We have the answer to {}'s question!".format(user.mention))
             await channel.send(embed=embed)
             await msg.unpin()
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
             await msg1.delete()
             answer = ''
             logging.info('FORCED OFF in {}'.format(channel.guild.name))
@@ -363,7 +361,7 @@ async def servers(ctx):
 #    else:
 #        times=1
 #        sentmessage=await ctx.send(content="{}{}/10".format(reactors,times))
-#        time.sleep(1)
+#        await asyncio.sleep(1)
 #        for x in range(9):
 #            times+=1
 #            reactors=''
@@ -372,7 +370,7 @@ async def servers(ctx):
 #                reactors+=user.name
 #                reactors+='\n'
 #            await sentmessage.edit(content="{}{}/10".format(reactors,times))
-#            time.sleep(1)
+#            await asyncio.sleep(1)
 #
 #@client.command()
 #async def getappcode(ctx):
