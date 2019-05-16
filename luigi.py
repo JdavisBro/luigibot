@@ -4,11 +4,13 @@ import time
 import random
 from discord.ext.commands import CommandNotFound
 import sys
-
+import logging
 #hey
-
 TOKEN = sys.argv[1]
 client = commands.Bot(command_prefix='o!')
+logger = logging.getLogger('discord')
+logger.setLevel(logging.INFO)
+logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 on = {}
 update=0
 client.question = {}
@@ -23,10 +25,6 @@ async def on_ready():
     print('Connection Established!\nConnected to DISCORD as {}'.format(client.user.name))
     game = discord.Game(name='with my LuigiBoard.')
     await client.change_presence(status=discord.Status.online, activity=game)
-
-@client.event
-async def on_reconnect():
-    print("Reconnected!")
 
 @client.event
 async def on_command_error(ctx, error):
@@ -138,7 +136,7 @@ async def on_message(message):
                     time.sleep(0.5)
                     await msg1.delete()
                     answer = ''
-                    print('OFF in {}'.format(message.guild.name))
+                    logging.info('OFF in {}'.format(message.guild.name))
                 else:
                     try:
                         await message.delete()
@@ -147,9 +145,9 @@ async def on_message(message):
             elif message.content == 'stopouija':
                 if message.author.id == 105725338541101056:
                     on[message.channel.id] = 0
-                    print('JdavisBro#2640 used stopouija to stop the question going on in {}'.format(message.guild.name))
+                    logging.info('JdavisBro#2640 used stopouija to stop the question going on in {}'.format(message.guild.name))
                 else:
-                    print('A user who is not JdavisBro#2640 attempted to use stopouija in {}'.format(message.guild.name))
+                    logging.info('A user who is not JdavisBro#2640 attempted to use stopouija in {}'.format(message.guild.name))
                     try:
                         await message.delete()
                     except:
@@ -183,7 +181,6 @@ async def ask(ctx,*,question):
         if on[ctx.channel.id] != 1:
             channel = ctx.channel
             user = ctx.author
-            message = ''
             if channel.name == 'ask-ouija':
                 if ctx.guild.me.permissions_in(channel).manage_messages:
                     answer = ''
@@ -225,14 +222,14 @@ async def ask(ctx,*,question):
                     await channel.send("I don't have permissions to manage messages in this channel.")
             else:
                 time.sleep(0.5)
-                print('Wrong channel')
+                logging.info('Somone attempted to start a Ouija in a channel that is not named "ask-ouija"')
         else:
             try:
                 await ctx.message.delete()
             except:
                 pass
             time.sleep(0.5)
-            print('already going')
+            logging.info('Someone attempted to start a Ouija while one is already going,')
     else:
         await ctx.send("Ouija is not allowed to start as there is an update soon!")
 
@@ -314,7 +311,6 @@ async def updatesoon(ctx):
             answer = client.answer[channel.id]
             msg = client.msg[channel.id]
             embed = client.messageembed[channel.id]
-            prevuser = client.prevuser[channel.id]
             user = client.origauthor[channel.id]
             on[channel.id] = 0
             setprevuser(channel.id,'')
@@ -329,7 +325,7 @@ async def updatesoon(ctx):
             time.sleep(0.5)
             await msg1.delete()
             answer = ''
-            print('FORCED OFF in {}'.format(channel.guild.name))
+            logging.info('FORCED OFF in {}'.format(channel.guild.name))
     await ctx.send("{}! Ouija instances shut down!".format(ctx.author.mention))
 
 @client.command()
@@ -380,7 +376,7 @@ async def servers(ctx):
 #
 #@client.command()
 #async def getappcode(ctx):
-#    print(type(ctx.channel) is discord.DMChannel)
+#    logging.info(type(ctx.channel) is discord.DMChannel)
 #    if type(ctx.channel) is discord.DMChannel:
 #        f = open("appcodes.txt")
 #        listatm=eval(f.read())
@@ -388,13 +384,13 @@ async def servers(ctx):
 #            while True:
 #                userint=random.randint(1000000,9999999)
 #                if userint in listatm.values():
-#                    print("HOW I SWEAR TO GOD")
+#                    logging.info("HOW I SWEAR TO GOD")
 #                else:
 #                    listatm[ctx.author.id]=userint
 #                    fw=open("appcodes.txt","w")
 #                    fw.write(str(listatm))
 #                    fw.flush()
-#                    print(ctx.author.name,"has been given the code",userint)
+#                    logging.info(ctx.author.name,"has been given the code",userint)
 #                    await ctx.send("Your code is {}".format(userint))
 #                    break
 #        else:
