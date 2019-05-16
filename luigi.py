@@ -10,7 +10,7 @@ import sys
 TOKEN = sys.argv[1]
 client = commands.Bot(command_prefix='o!')
 on = {}
-dontallowouija=0
+update=0
 client.question = {}
 client.answer = {}
 client.msg = {}
@@ -56,11 +56,13 @@ def setuser(channelid,user):
 @client.event
 async def on_message(message):
     global on
-    if str(message.channel.id) not in on.keys():
-        on[str(message.channel.id)] = 0
-    if on[str(message.channel.id)] == 1:
+    if message.channel.id not in on.keys():
+        on[message.channel.id] = 0
+    if on[message.channel.id] == 1:
         if message.channel.name == "ask-ouija":
-            if message.author.id == 105725338541101056:
+            if message.author.id == 105725338541101056 or message.author.id == 557320040127397888 or message.author.id == 578613845111734284:
+                if message.author.id == 557320040127397888 or message.author.id == 578613845111734284:
+                    return
                 if message.content.startswith("##"):
                     return
         question = client.question[message.channel.id]
@@ -123,15 +125,16 @@ async def on_message(message):
                         pass
             elif message.content == 'goodbye' or message.content == 'Goodbye':
                 if message.author != user:
-                    on[str(message.channel.id)] = 0
+                    on[message.channel.id] = 0
                     setprevuser(message.channel.id,'')
+                    if answer == '':
+                        answer = ' '
                     embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was `{}`'.format(question), color=2151680)
-                    embed.set_author(name='Ouija Question!', url='https://discord.gg/FxFvQye', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                    embed.set_thumbnail(url='https://cdn.discordapp.com/avatars/557320040127397888/5f3d0e0ad8a4a8143d261745fad05f1a.png?size=256')
+                    embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
                     embed.add_field(name='The answer is', value='`{}`'.format(answer).replace('{}', ''), inline=False)
                     msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
                     await message.channel.send(embed=embed)
-                    await msg.delete()
+                    await msg.unpin()
                     time.sleep(0.5)
                     await msg1.delete()
                     answer = ''
@@ -143,7 +146,7 @@ async def on_message(message):
                         pass
             elif message.content == 'stopouija':
                 if message.author.id == 105725338541101056:
-                    on[str(message.channel.id)] = 0
+                    on[message.channel.id] = 0
                     print('JdavisBro#2640 used stopouija to stop the question going on in {}'.format(message.guild.name))
                 else:
                     print('A user who is not JdavisBro#2640 attempted to use stopouija in {}'.format(message.guild.name))
@@ -172,12 +175,12 @@ async def on_message(message):
 
 @client.command()
 async def ask(ctx,*,question):
-    """Asks a question! Can only be used in a channel named 'ask-ouija'"""
-    global dontallowouija
-    if dontallowouija == 0:
-        if str(ctx.message.channel.id) not in on.keys():
-            on[str(ctx.message.channel.id)] = 0
-        if on[str(ctx.message.channel.id)] != 1:
+    "Asks a question! Can only be used in a channel named 'ask-ouija'"
+    global update
+    if update == 0:
+        if ctx.channel.id not in on.keys():
+            on[ctx.channel.id] = 0
+        if on[ctx.channel.id] != 1:
             channel = ctx.channel
             user = ctx.author
             message = ''
@@ -190,8 +193,7 @@ async def ask(ctx,*,question):
                         answer = '{}'
                     if question != '':
                         embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='`{}`'.format(question), color=6363163)
-                        embed.set_author(name='Ouija Question!', url='https://discord.gg/FxFvQye', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                        embed.set_thumbnail(url='https://cdn.discordapp.com/avatars/557320040127397888/5f3d0e0ad8a4a8143d261745fad05f1a.png?size=256')
+                        embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
                         embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', ' ')), inline=False)
                         embed.set_footer(text='Question by {}'.format(user))
                         try:
@@ -216,7 +218,7 @@ async def ask(ctx,*,question):
                         setembed(ctx.channel.id,embed)
                         setmsg(ctx.channel.id,msg)
                         setprevuser(ctx.channel.id,"")
-                        on[str(ctx.message.channel.id)] = 1
+                        on[ctx.channel.id] = 1
                     else:
                         await ctx.send("Hey, you need to ask something!!")
                 else:
@@ -232,7 +234,7 @@ async def ask(ctx,*,question):
             time.sleep(0.5)
             print('already going')
     else:
-        await ctx.say("Ouija is not allowed to start as there is an update soon!")
+        await ctx.send("Ouija is not allowed to start as there is an update soon!")
 
 @client.command()
 async def exit(ctx):
@@ -285,12 +287,50 @@ async def say(ctx, *, say):
         time.sleep(0.5)
         await ctx.send(say)
 
-#@client.command()
-#@commands.is_owner()
-#async def updatesoon(ctx):
-#    global dontallowouija
-#    dontallowouija==1
-#    print(dontallowouija)
+@client.command()
+@commands.is_owner()
+async def updatesoon(ctx):
+    ouijasactive = 0
+    await ctx.send("Ok! Shutting down all ouija questions in 5 minutes. Questions are no longer allowed to be asked")
+    global on, update
+    update = 1
+    for id, oneorzero in on.items():
+        if oneorzero == 1:
+            ouijasactive += 1
+            channel = client.get_channel(id)
+            try:
+                role=discord.utils.get(channel.guild.roles, name='Luigi')
+                await ctx.send("{}! This Ouija will be shut down in 5 minutes as there will be an update soon.".format(role.mention))
+            except:
+                await channel.send("This Ouija will be shut down in 5 minutes as there will be an update soon.")
+    if ouijasactive == 0:
+        await ctx.send("Looks like there are no Ouija instances running!")
+    time.sleep(300) #SLEEP IS HERE IF YOU ARE WONDERING @JDAVISBRO
+    for id, oneorzero in on.items():
+        if oneorzero == 1:
+            channel = client.get_channel(id)
+            await channel.send("Shutting Down Ouija.")
+            question = client.question[channel.id]
+            answer = client.answer[channel.id]
+            msg = client.msg[channel.id]
+            embed = client.messageembed[channel.id]
+            prevuser = client.prevuser[channel.id]
+            user = client.origauthor[channel.id]
+            on[channel.id] = 0
+            setprevuser(channel.id,'')
+            if answer == '':
+                answer = ' '
+            embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was `{}`'.format(question), color=2151680)
+            embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+            embed.add_field(name='The answer is', value='`{}`'.format(answer).replace('{}', ''), inline=False)
+            msg1 = await channel.send("We have the answer to {}'s question!".format(user.mention))
+            await channel.send(embed=embed)
+            await msg.unpin()
+            time.sleep(0.5)
+            await msg1.delete()
+            answer = ''
+            print('FORCED OFF in {}'.format(channel.guild.name))
+    await ctx.send("{}! Ouija instances shut down!".format(ctx.author.mention)
 
 @client.command()
 @commands.is_owner()
