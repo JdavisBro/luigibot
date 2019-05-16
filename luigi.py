@@ -330,7 +330,7 @@ async def updatesoon(ctx):
             await msg1.delete()
             answer = ''
             print('FORCED OFF in {}'.format(channel.guild.name))
-    await ctx.send("{}! Ouija instances shut down!".format(ctx.author.mention)
+    await ctx.send("{}! Ouija instances shut down!".format(ctx.author.mention))
 
 @client.command()
 @commands.is_owner()
