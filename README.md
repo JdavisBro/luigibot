@@ -4,9 +4,13 @@ This bot replicates /r/askouija where people can only respond with one letter at
 - To ask a question use o!ask (question). If you want a fill in the blanks part in your question add '{}' where you want the blank.
 - To help respond to a question say any character or 'space'
 - To end the question you type 'goodbye' or 'Goodbye' and it will mention the user that asked the question saying the answer in an embed
-## To work the channel must:
-* Be named 'ask-ouija'
-* Luigi must have permissions to, read messages, read message history, send messages, add reactions and manage messages.
+## To work the channel must be named 'ask-ouija'
+## and Luigi must have permissions (in that channel) to:
+- Read Meassges
+- Read Message History
+- Send Messages
+- Add Reactions
+- Manage Messages
 
 ### Role Pinging
 There is also a feature to have a role that will get pinged when a new Question begins, to make this role it needs to be named 'Luigi' and luigibot must have to ability to give roles and be above it.
