@@ -242,12 +242,12 @@ async def ask(ctx,*,question):
         await ctx.send("Ouija is not allowed to start as there is an update soon!")
 
 @client.command()
+@commands.is_owner()
 async def exit(ctx):
     'Stops the bot, only usable by the owner.'
-    if ctx.author.id == 105725338541101056:
-        await ctx.send('Goodbye! 👋')
-        await client.change_presence(status=discord.Status.invisible)
-        await client.close()
+    await ctx.send('Goodbye! 👋')
+    await client.change_presence(status=discord.Status.invisible)
+    await client.close()
 
 @client.command()
 async def role(ctx):
@@ -307,7 +307,7 @@ async def updatesoon(ctx):
             channel = client.get_channel(id)
             try:
                 role=discord.utils.get(channel.guild.roles, name='Luigi')
-                await ctx.send("{}! This Ouija will be shut down in 5 minutes as there will be an update soon.".format(role.mention))
+                await channel.send("{}! This Ouija will be shut down in 5 minutes as there will be an update soon.".format(role.mention))
             except:
                 await channel.send("This Ouija will be shut down in 5 minutes as there will be an update soon.")
     if ouijasactive == 0:
