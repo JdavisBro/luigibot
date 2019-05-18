@@ -7,11 +7,12 @@ import sys
 import logging
 #hey
 TOKEN = sys.argv[1]
-client = commands.Bot(command_prefix='o!')
+client = commands.Bot(command_prefix='o!',description="A bot to replicate /r/askouija on Discord!")
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 on = {}
+owner = 'this is a placeholder lmao'
 update=0
 client.question = {}
 client.answer = {}
@@ -22,9 +23,12 @@ client.origauthor = {}
 
 @client.event
 async def on_ready():
-    print('Connection Established!\nConnected to DISCORD as {}'.format(client.user.name))
+    logging.info('Connected to DISCORD as {}'.format(str(client.user)))
     game = discord.Game(name='with my LuigiBoard.')
     await client.change_presence(status=discord.Status.online, activity=game)
+    global appinfo, owner
+    appinfo = await client.application_info()
+    owner = appinfo.owner
 
 @client.event
 async def on_command_error(ctx, error):
@@ -77,7 +81,10 @@ async def on_message(message):
                         if message.content != '{':
                             answer = answer.replace('{}', message.content + '{}')
                             embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
-                            await message.add_reaction('✅')
+                            try:
+                                await message.add_reaction('✅')
+                            except:
+                                pass
                             await msg.edit(embed=embed)
                             embed.clear_fields()
                             prevuser = message.author
@@ -102,9 +109,12 @@ async def on_message(message):
             elif message.content == 'space':
                 if message.author != user:
                     if message.author != prevuser:
-                        answer = answer.replace('{}', ' {}')
+                        answer = answer.replace('{}', '␣{}')
                         embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
-                        await message.add_reaction('✅')
+                        try:
+                            await message.add_reaction('✅')
+                        except:
+                            pass
                         await msg.edit(embed=embed)
                         embed.clear_fields()
                         prevuser = message.author
@@ -127,6 +137,7 @@ async def on_message(message):
                     setprevuser(message.channel.id,'')
                     if answer == '':
                         answer = ' '
+                    answer=answer.replace("␣"," ")
                     embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was `{}`'.format(question), color=2151680)
                     embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
                     embed.add_field(name='The answer is', value='`{}`'.format(answer).replace('{}', ''), inline=False)
@@ -181,45 +192,42 @@ async def ask(ctx,*,question):
         if on[ctx.channel.id] != 1:
             channel = ctx.channel
             user = ctx.author
-            if channel.name == 'ask-ouija':
-                if ctx.guild.me.permissions_in(channel).manage_messages:
-                    answer = ''
-                    if '{}' in question:
-                        answer = question
-                    else:
-                        answer = '{}'
-                    if question != '':
-                        embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='`{}`'.format(question), color=6363163)
-                        embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                        embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', ' ')), inline=False)
-                        embed.set_footer(text='Question by {}'.format(user))
-                        try:
-                            role=discord.utils.get(ctx.guild.roles, name='Luigi')
-                            msg1=await ctx.send("{}: {} (in {}) has asked `{}`!".format(role.mention,user.name,ctx.guild.name,question))
-                        except:
-                            pass
-                        msg = await ctx.send(embed=embed)
-                        try:
-                            await msg.pin()
-                        except:
-                            pass
-                        await asyncio.sleep(0.5)
-                        try:
-                            await msg1.delete()
-                        except:
-                            pass
-                        embed.clear_fields()
-                        setuser(ctx.channel.id,user)
-                        setquestion(ctx.channel.id,question)
-                        setanswer(ctx.channel.id,answer)
-                        setembed(ctx.channel.id,embed)
-                        setmsg(ctx.channel.id,msg)
-                        setprevuser(ctx.channel.id,"")
-                        on[ctx.channel.id] = 1
-                    else:
-                        await ctx.send("Hey, you need to ask something!!")
+            if channel.name == 'ask-ouija' or channel.name == 'askouija' or channel.name == 'ouija' or channel.name == 'ouijaboard' or channel.name == 'ask-luigi' or channel.name == 'askluigi' or channel.name == 'luigiboard':
+                answer = ''
+                if '{}' in question:
+                    answer = question
                 else:
-                    await channel.send("I don't have permissions to manage messages in this channel.")
+                    answer = '{}'
+                if question != '':
+                    embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='`{}`'.format(question), color=6363163)
+                    embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                    embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', ' ')), inline=False)
+                    embed.set_footer(text='Question by {}'.format(user))
+                    try:
+                        role=discord.utils.get(ctx.guild.roles, name='Luigi')
+                        msg1=await ctx.send("{}: {} (in {}) has asked `{}`!".format(role.mention,user.name,ctx.guild.name,question))
+                    except:
+                        pass
+                    msg = await ctx.send(embed=embed)
+                    try:
+                        await msg.pin()
+                    except:
+                        pass
+                    await asyncio.sleep(0.5)
+                    try:
+                        await msg1.delete()
+                    except:
+                        pass
+                    embed.clear_fields()
+                    setuser(ctx.channel.id,user)
+                    setquestion(ctx.channel.id,question)
+                    setanswer(ctx.channel.id,answer)
+                    setembed(ctx.channel.id,embed)
+                    setmsg(ctx.channel.id,msg)
+                    setprevuser(ctx.channel.id,"")
+                    on[ctx.channel.id] = 1
+                else:
+                    await ctx.send("Hey, you need to ask something!!")
             else:
                 await asyncio.sleep(0.5)
                 logging.info('Somone attempted to start a Ouija in a channel that is not named "ask-ouija"')
@@ -235,7 +243,7 @@ async def ask(ctx,*,question):
 
 @client.command()
 async def exit(ctx):
-    'Stops the bot'
+    'Stops the bot, only usable by the owner.'
     if ctx.author.id == 105725338541101056:
         await ctx.send('Goodbye! 👋')
         await client.change_presence(status=discord.Status.invisible)
@@ -243,7 +251,7 @@ async def exit(ctx):
 
 @client.command()
 async def role(ctx):
-    'Gives you the Luigi role for pings when a new Ouija starts!'
+    'Gives you the Luigi role if it exists in the server, the role gets pinged whenever a new Ouija starts!'
     member = ctx.author
     try:
         role = discord.utils.get(ctx.guild.roles, name='Luigi')
@@ -275,18 +283,22 @@ async def unrole(ctx):
     await msg.delete()
 
 @client.command()
+@commands.is_owner()
 async def say(ctx, *, say):
-    if ctx.author.id == 105725338541101056:
+    'Makes the bot say something, only usable by the owner'
+    try:
         await ctx.message.delete()
-        await ctx.channel.trigger_typing()
-        await asyncio.sleep(0.5)
-        await ctx.send(say)
+    except:
+        pass
+    await ctx.channel.trigger_typing()
+    await asyncio.sleep(0.5)
+    await ctx.send(say)
 
 @client.command()
 @commands.is_owner()
 async def updatesoon(ctx):
+    'Stops new Questions from being asks and shuts down ongoing ouijas after 5 minutes, only useable by the owner'
     ouijasactive = 0
-    await ctx.send("Ok! Shutting down all ouija questions in 5 minutes. Questions are no longer allowed to be asked")
     global on, update
     update = 1
     for id, oneorzero in on.items():
@@ -300,6 +312,9 @@ async def updatesoon(ctx):
                 await channel.send("This Ouija will be shut down in 5 minutes as there will be an update soon.")
     if ouijasactive == 0:
         await ctx.send("Looks like there are no Ouija instances running!")
+        return
+    else:
+        await ctx.send("Closing Down {} Questions on 5 Minutes".format(str(ouijasactive)))
     await asyncio.sleep(300)
     for id, oneorzero in on.items():
         if oneorzero == 1:
@@ -329,11 +344,13 @@ async def updatesoon(ctx):
 @client.command()
 @commands.is_owner()
 async def servers(ctx):
-    servers=''
-    for guild in client.guilds:
-        servers+=guild.name
-        servers+='\n'
-    await ctx.send(servers)
+    'Lists the servers the bot is in, only usable by the owner in DMs'
+    if type(ctx.channel) is discord.DMChannel:
+        servers=''
+        for guild in client.guilds:
+            servers+=guild.name
+            servers+='\n'
+        await ctx.send(servers)
 
 #@client.command()
 #async def reactors(ctx,msgid,channel: discord.TextChannel,emote: discord.Emoji,randomize=0):
