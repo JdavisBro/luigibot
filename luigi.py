@@ -226,6 +226,7 @@ async def ask(ctx,*,question):
                     setmsg(ctx.channel.id,msg)
                     setprevuser(ctx.channel.id,"")
                     on[ctx.channel.id] = 1
+                    logging.info("ON in {}".format(ctx.guild.name))
                 else:
                     await ctx.send("Hey, you need to ask something!!")
             else:
