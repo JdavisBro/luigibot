@@ -1,4 +1,4 @@
-# LuigiBot
+# LuigiBot (o!)
 ## A bot to replicate /r/askouija on Discord
 This bot replicates /r/askouija where people can only respond with one letter at a time and must create a phrase to respond to the question/statment said.
 - To ask a question use o!ask (question). If you want a fill in the blanks part in your question add '{}' where you want the blank.
