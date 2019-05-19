@@ -34,6 +34,7 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
+        channel = ctx.channel
         if channel.name == 'ask-ouija' or channel.name == 'askouija' or channel.name == 'ouija' or channel.name == 'ouijaboard' or channel.name == 'ask-luigi' or channel.name == 'askluigi' or channel.name == 'luigiboard':
             await ctx.send("Command not found, if you are trying to ask a question use o!ask")
         return
