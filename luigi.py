@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import asyncio
 import random
+import time, datetime
 from discord.ext.commands import CommandNotFound
 import sys
 import logging
@@ -12,7 +13,7 @@ logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 on = {}
-owner = 'this is a placeholder lmao'
+client.startTime = time.time()
 update=0
 client.question = {}
 client.answer = {}
@@ -249,6 +250,16 @@ async def exit(ctx):
     await ctx.send('Goodbye! 👋')
     await client.change_presence(status=discord.Status.invisible)
     await client.close()
+
+@client.command()
+async def uptime(ctx):
+    'Shows you how long the bot has been online'
+    currentTime = time.time()
+    uptime = int(round(currentTime - client.startTime))
+    uptime = str(datetime.timedelta(seconds=uptime))
+    colour = discord.Colour.from_rgb(random.randint(1,255),random.randint(1,255),random.randint(1,255))
+    embed = discord.Embed(title="I have been up for", description=uptime, color=colour)
+    await ctx.send(embed=embed)
 
 @client.command()
 async def role(ctx):
