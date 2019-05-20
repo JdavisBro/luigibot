@@ -6,15 +6,33 @@ import time, datetime
 from discord.ext.commands import CommandNotFound
 import sys
 import logging
-#hey
-TOKEN = sys.argv[1]
-client = commands.Bot(command_prefix='o!',description="A bot to replicate /r/askouija on Discord!")
+import json
+
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
-on = {}
+
+try:
+    open("prefixes.json","x")
+    open("prefixes.json","w").write("{}")
+    logging.info("prefixes.json created, used to store per server prefixes.")
+except:
+    logging.info("prefixes.json already exists, unable to create it.")
+
+with open("prefixes.json","r") as f:
+    prefixes = json.load(f)
+
+default_prefix = "o!"
+
+def prefix(bot, message):
+    id = str(message.guild.id)
+    return prefixes.get(id, default_prefix)
+
+client = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!\nDo [PREFIX]help [COMMAND] to view full descriptions.")
+TOKEN = sys.argv[1]
 client.startTime = time.time()
 update=0
+on = {}
 client.question = {}
 client.answer = {}
 client.msg = {}
@@ -241,8 +259,20 @@ async def ask(ctx,*,question):
 async def exit(ctx):
     'Stops the bot, only usable by the owner.'
     await ctx.send('Goodbye! 👋')
-    await client.change_presence(status=discord.Status.invisible)
     await client.close()
+
+@client.command()
+async def setprefix(ctx,prefixToBeSet="o!"):
+    'Sets the command prefix for this server, only usable by a user that has the Manage Server permissions, if the prefix you want contains space put it in "quotes". Defaults to `o!` if no prefix is specified'
+    if ctx.author.guild_permissions.manage_guild or ctx.author == owner:
+        if "```" not in prefixToBeSet:
+            prefixes[str(ctx.guild.id)] = prefixToBeSet
+            await ctx.send("Prefix for {} set to `{}`".format(ctx.guild.name,prefixToBeSet))
+            with open("prefixes.json","w") as f:
+                f.write(str(json.dumps(prefixes)))
+                f.flush()
+        else:
+            await ctx.send("You can't have \``` in your prefix.")
 
 @client.command()
 async def uptime(ctx):
