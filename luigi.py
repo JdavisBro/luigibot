@@ -81,7 +81,7 @@ async def on_message(message):
     global on, owner
     if message.guild.id not in on.keys():
         on[message.guild.id] = 0
-    if on[message.guild.id] == 1:
+    if on[message.guild.id] != 0:
         if message.channel.name == "ask-ouija" or message.channel.name == 'askouija' or message.channel.name == 'ouija' or message.channel.name == 'ouijaboard' or message.channel.name == 'ask-luigi' or message.channel.name == 'askluigi' or message.channel.name == 'luigiboard':
             if message.author == owner or message.author == message.guild.me: 
                 if message.author == message.guild.me:
@@ -135,7 +135,7 @@ async def on_message(message):
                         except:
                             pass
                 elif message.content == 'goodbye' or message.content == 'Goodbye':
-                    if message.author != user:
+                    if message.author != user and message.author != prevuser:
                         on[message.guild.id] = 0
                         setprevuser(message.guild.id,'')
                         if answer == '':
@@ -157,11 +157,11 @@ async def on_message(message):
                         except:
                             pass
                 elif message.content == 'stopouija':
-                    if message.author.id == 105725338541101056:
+                    if message.author == owner:
                         on[message.guild.id] = 0
-                        logging.info('JdavisBro#2640 used stopouija to stop the question going on in {}'.format(message.guild.name))
+                        logging.info('{} used stopouija to stop the question going on in {}'.format(str(owner),message.guild.name))
                     else:
-                        logging.info('A user who is not JdavisBro#2640 attempted to use stopouija in {}'.format(message.guild.name))
+                        logging.info('A user who is not {} attempted to use stopouija in {}'.format(str(owner),message.guild.name))
                         try:
                             await message.delete()
                         except:
@@ -198,7 +198,7 @@ async def ask(ctx,*,question):
     if update == 0:
         if ctx.guild.id not in on.keys():
             on[ctx.guild.id] = 0
-        if on[ctx.guild.id] != 1:
+        if on[ctx.guild.id] == 0:
             channel = ctx.channel
             user = ctx.author
             if channel.name == 'ask-ouija' or channel.name == 'askouija' or channel.name == 'ouija' or channel.name == 'ouijaboard' or channel.name == 'ask-luigi' or channel.name == 'askluigi' or channel.name == 'luigiboard':
@@ -234,7 +234,7 @@ async def ask(ctx,*,question):
                     setembed(ctx.guild.id,embed)
                     setmsg(ctx.guild.id,msg)
                     setprevuser(ctx.guild.id,"")
-                    on[ctx.guild.id] = 1
+                    on[ctx.guild.id] = ctx.channel.id
                     logging.info("ON in {}".format(ctx.guild.name))
                 else:
                     await ctx.send("Hey, you need to ask something!!")
@@ -272,7 +272,7 @@ async def setprefix(ctx,prefixToBeSet="o!"):
                 f.write(str(json.dumps(prefixes)))
                 f.flush()
         else:
-            await ctx.send("You can't have \``` in your prefix.")
+            await ctx.send("You can't have \r\``` in your prefix.")
 
 @client.command()
 async def uptime(ctx):
@@ -336,14 +336,10 @@ async def updatesoon(ctx):
     ouijasactive = 0
     global on, update
     update = 1
-    for id, oneorzero in on.items():
-        if oneorzero == 1:
+    for id, channelid in on.items():
+        if channelid != 0:
             ouijasactive += 1
-            guild = client.get_guild(id)
-            for channel in guild.text_channels:
-                if channel.name == "ask-ouija" or channel.name == 'askouija' or channel.name == 'ouija' or channel.name == 'ouijaboard' or channel.name == 'ask-luigi' or channel.name == 'askluigi' or channel.name == 'luigiboard':
-                    channelbing = channel
-            channel = channelbing
+            channel = client.get_channel(channelid)
             try:
                 role=discord.utils.get(channel.guild.roles, name='Luigi')
                 await channel.send("{}! This Ouija will be shut down in 5 minutes as there will be an update soon.".format(role.mention))
@@ -355,13 +351,9 @@ async def updatesoon(ctx):
     else:
         await ctx.send("Closing Down {} Questions on 5 Minutes".format(str(ouijasactive)))
     await asyncio.sleep(300)
-    for id, oneorzero in on.items():
-        if oneorzero == 1:
-            guild = client.get_guild(id)
-            for channel in guild.text_channels:
-                if channel.name == "ask-ouija" or channel.name == 'askouija' or channel.name == 'ouija' or channel.name == 'ouijaboard' or channel.name == 'ask-luigi' or channel.name == 'askluigi' or channel.name == 'luigiboard':
-                    channelbing = channel
-            channel = channelbing 
+    for id, channelid in on.items():
+        if channelid != 0:
+            channel = client.get_channel(channelid)
             await channel.send("Shutting Down Ouija.")
             question = client.question[ctx.guild.id]
             answer = client.answer[ctx.guild.id]
