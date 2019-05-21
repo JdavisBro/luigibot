@@ -23,8 +23,11 @@ with open("prefixes.json","r") as f:
 default_prefix = "o!"
 
 async def prefix(bot, message):
-    id = str(message.guild.id)
-    return prefixes.get(id, default_prefix)
+    if type(message.channel) is not discord.DMChannel:
+        id = str(message.guild.id)
+        return prefixes.get(id, default_prefix)
+    else:
+        return default_prefix
 
 client = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!\nDo [PREFIX]help [COMMAND] to view full descriptions.")
 TOKEN = sys.argv[1]
