@@ -40,7 +40,6 @@ client.origauthor = {}
 
 @client.event
 async def on_ready():
-    await asyncio.sleep(5)
     logging.info('Connected to DISCORD as {}'.format(str(client.user)))
     game = discord.Game(name='with my LuigiBoard.')
     await client.change_presence(status=discord.Status.online, activity=game)
@@ -78,89 +77,96 @@ def setuser(channelid,user):
 @client.event
 async def on_message(message):
     global on, owner
-    if message.guild.id not in on.keys():
-        on[message.guild.id] = 0
-    if on[message.guild.id] != 0:
-        if message.channel.name == "ask-ouija" or message.channel.name == 'askouija' or message.channel.name == 'ouija' or message.channel.name == 'ouijaboard' or message.channel.name == 'ask-luigi' or message.channel.name == 'askluigi' or message.channel.name == 'luigiboard':
-            if message.author == owner or message.author == message.guild.me: 
-                if message.author == message.guild.me:
-                    return
-                if message.content.startswith("##"):
-                    return
-            question = client.question[message.guild.id]
-            answer = client.answer[message.guild.id]
-            msg = client.msg[message.guild.id]
-            embed = client.messageembed[message.guild.id]
-            prevuser = client.prevuser[message.guild.id]
-            user = client.origauthor[message.guild.id]
-            length = len(message.content)
-            if message.author.bot == False:
-                if length == 1:
-                    if message.author != user and message.author != prevuser and message.content != '{':
-                        answer = answer.replace('{}', message.content + '{}')
-                        embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
-                        try:
-                            await message.add_reaction('✅')
-                        except:
-                            pass
-                        await msg.edit(embed=embed)
-                        embed.clear_fields()
-                        prevuser = message.author
-                        setprevuser(message.guild.id,prevuser)
-                        setanswer(message.guild.id,answer)
-                        await asyncio.sleep(0.5)
+    if type(ctx.channel) is not discord.DMChannel:
+        if message.guild.id not in on.keys():
+            on[message.guild.id] = 0
+        if on[message.guild.id] != 0:
+            if message.channel.name == "ask-ouija" or message.channel.name == 'askouija' or message.channel.name == 'ouija' or message.channel.name == 'ouijaboard' or message.channel.name == 'ask-luigi' or message.channel.name == 'askluigi' or message.channel.name == 'luigiboard':
+                if message.author == owner or message.author == message.guild.me: 
+                    if message.author == message.guild.me:
+                        return
+                    if message.content.startswith("##"):
+                        return
+                question = client.question[message.guild.id]
+                answer = client.answer[message.guild.id]
+                msg = client.msg[message.guild.id]
+                embed = client.messageembed[message.guild.id]
+                prevuser = client.prevuser[message.guild.id]
+                user = client.origauthor[message.guild.id]
+                length = len(message.content)
+                if message.author.bot == False:
+                    if length == 1:
+                        if message.author != user and message.author != prevuser and message.content != '{':
+                            answer = answer.replace('{}', message.content + '{}')
+                            embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
+                            try:
+                                await message.add_reaction('✅')
+                            except:
+                                pass
+                            await msg.edit(embed=embed)
+                            embed.clear_fields()
+                            prevuser = message.author
+                            setprevuser(message.guild.id,prevuser)
+                            setanswer(message.guild.id,answer)
+                            await asyncio.sleep(0.5)
+                        else:
+                            try:
+                                await message.delete()
+                            except:
+                                pass
+                    elif message.content == 'space':
+                        if message.author != user and message.author != prevuser:
+                            answer = answer.replace('{}', '␣{}')
+                            embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
+                            try:
+                                await message.add_reaction('✅')
+                            except:
+                                pass
+                            await msg.edit(embed=embed)
+                            embed.clear_fields()
+                            prevuser = message.author
+                            setprevuser(message.guild.id,prevuser)
+                            setanswer(message.guild.id,answer)
+                            await asyncio.sleep(0.5)
+                        else:
+                            try:
+                                await message.delete()
+                            except:
+                                pass
+                    elif message.content == 'goodbye' or message.content == 'Goodbye':
+                        if message.author != user and message.author != prevuser:
+                            on[message.guild.id] = 0
+                            setprevuser(message.guild.id,'')
+                            if answer == '':
+                                answer = ' '
+                            answer=answer.replace("␣"," ")
+                            embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was `{}`'.format(question), color=2151680)
+                            embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                            embed.add_field(name='The answer is', value='`{}`'.format(answer).replace('{}', ''), inline=False)
+                            msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
+                            await message.channel.send(embed=embed)
+                            await msg.unpin()
+                            await asyncio.sleep(0.5)
+                            await msg1.delete()
+                            answer = ''
+                            logging.info('OFF in {}'.format(message.guild.name))
+                        else:
+                            try:
+                                await message.delete()
+                            except:
+                                pass
+                    elif message.content == 'stopouija':
+                        if message.author == owner:
+                            on[message.guild.id] = 0
+                            logging.info('{} used stopouija to stop the question going on in {}'.format(str(owner),message.guild.name))
+                        else:
+                            logging.info('A user who is not {} attempted to use stopouija in {}'.format(str(owner),message.guild.name))
+                            try:
+                                await message.delete()
+                            except:
+                                pass
                     else:
-                        try:
-                            await message.delete()
-                        except:
-                            pass
-                elif message.content == 'space':
-                    if message.author != user and message.author != prevuser:
-                        answer = answer.replace('{}', '␣{}')
-                        embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
-                        try:
-                            await message.add_reaction('✅')
-                        except:
-                            pass
-                        await msg.edit(embed=embed)
-                        embed.clear_fields()
-                        prevuser = message.author
-                        setprevuser(message.guild.id,prevuser)
-                        setanswer(message.guild.id,answer)
-                        await asyncio.sleep(0.5)
-                    else:
-                        try:
-                            await message.delete()
-                        except:
-                            pass
-                elif message.content == 'goodbye' or message.content == 'Goodbye':
-                    if message.author != user and message.author != prevuser:
-                        on[message.guild.id] = 0
-                        setprevuser(message.guild.id,'')
-                        if answer == '':
-                            answer = ' '
-                        answer=answer.replace("␣"," ")
-                        embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was `{}`'.format(question), color=2151680)
-                        embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                        embed.add_field(name='The answer is', value='`{}`'.format(answer).replace('{}', ''), inline=False)
-                        msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
-                        await message.channel.send(embed=embed)
-                        await msg.unpin()
-                        await asyncio.sleep(0.5)
-                        await msg1.delete()
-                        answer = ''
-                        logging.info('OFF in {}'.format(message.guild.name))
-                    else:
-                        try:
-                            await message.delete()
-                        except:
-                            pass
-                elif message.content == 'stopouija':
-                    if message.author == owner:
-                        on[message.guild.id] = 0
-                        logging.info('{} used stopouija to stop the question going on in {}'.format(str(owner),message.guild.name))
-                    else:
-                        logging.info('A user who is not {} attempted to use stopouija in {}'.format(str(owner),message.guild.name))
+                        await client.process_commands(message)
                         try:
                             await message.delete()
                         except:
@@ -172,17 +178,17 @@ async def on_message(message):
                     except:
                         pass
             else:
+                if message.author.bot == False:
+                    if message.content.startswith("if you are real say "):
+                        send=message.content.replace("if you are real say ","")
+                        await message.channel.send("{}, lol".format(send))
                 await client.process_commands(message)
-                try:
-                    await message.delete()
-                except:
-                    pass
         else:
             if message.author.bot == False:
                 if message.content.startswith("if you are real say "):
                     send=message.content.replace("if you are real say ","")
                     await message.channel.send("{}, lol".format(send))
-            await client.process_commands(message)
+                await client.process_commands(message)
     else:
         if message.author.bot == False:
             if message.content.startswith("if you are real say "):
