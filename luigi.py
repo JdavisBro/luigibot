@@ -9,7 +9,7 @@ import logging
 import json
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
 try:
@@ -272,7 +272,7 @@ async def setprefix(ctx,prefixToBeSet="o!"):
                 f.write(str(json.dumps(prefixes)))
                 f.flush()
         else:
-            await ctx.send("You can't have \r\``` in your prefix.")
+            await ctx.send("You can't have ``` in your prefix.")
 
 @client.command()
 async def uptime(ctx):
