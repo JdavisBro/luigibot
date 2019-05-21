@@ -22,7 +22,7 @@ with open("prefixes.json","r") as f:
 
 default_prefix = "o!"
 
-def prefix(bot, message):
+async def prefix(bot, message):
     id = str(message.guild.id)
     return prefixes.get(id, default_prefix)
 
