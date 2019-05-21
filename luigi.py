@@ -40,7 +40,7 @@ client.origauthor = {}
 
 @client.event
 async def on_ready():
-    await asyncio.sleep(10)
+    await asyncio.sleep(5)
     logging.info('Connected to DISCORD as {}'.format(str(client.user)))
     game = discord.Game(name='with my LuigiBoard.')
     await client.change_presence(status=discord.Status.online, activity=game)
