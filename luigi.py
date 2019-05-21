@@ -77,7 +77,7 @@ def setuser(channelid,user):
 @client.event
 async def on_message(message):
     global on, owner
-    if type(ctx.channel) is not discord.DMChannel:
+    if type(message.channel) is not discord.DMChannel:
         if message.guild.id not in on.keys():
             on[message.guild.id] = 0
         if on[message.guild.id] != 0:
