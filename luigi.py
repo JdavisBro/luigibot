@@ -8,8 +8,6 @@ import sys
 import logging
 import json
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
 try:
