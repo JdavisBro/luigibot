@@ -98,7 +98,7 @@ async def on_message(message):
                 prevuser = client.prevuser[message.guild.id]
                 user = client.origauthor[message.guild.id]
                 length = len(message.content)
-                if message.author.bot == True:
+                if message.author.bot == False:
                     if length == 1:
                         if message.author != user and message.author != prevuser and message.content != '{':
                             answer = answer.replace('{}', message.content + '{}')
