@@ -469,7 +469,7 @@ async def servers(ctx):
 #                    await ctx.send("{} is {}".format(number,client.get_user(id)))
 
 @client.command()
-async def messagepercent(ctx,content):
+async def messagepercent(ctx,*,content):
     server = 0
     user = 0
     msg = await ctx.send("Search starting.")
@@ -478,7 +478,7 @@ async def messagepercent(ctx,content):
             if channel.permissions_for(ctx.guild.me).read_message_history:
                 if channel.permissions_for(ctx.author).read_messages:
                     await msg.edit(content="Searching Channel {}.".format(channel))
-                    messages = await channel.history(limit=123).flatten()
+                    messages = await channel.history(limit=None).flatten()
                     for message in messages:
                         if message.content.count(content):
                             server += message.content.count(content)
