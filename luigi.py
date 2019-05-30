@@ -484,7 +484,7 @@ async def messagepercent(ctx,*,content):
                             server += message.content.count(content)
                             if message.author == ctx.message.author:
                                 user += message.content.count(content)
-    await msg.edit(content="Search complete, you had {} messages containing {} and the server had {}, making {}% of the messages containing {} being from you!".format(user,content,server,round(user/server*100,2),content))
+    await msg.edit(content="Search complete, {} had {} messages containing {} and the server had {}, making {}% of the messages containing {} being from you!".format(ctx.author.mention,user,content,server,round(user/server*100,2),content))
 
 @client.command()
 async def editnick(ctx,*,newnick: str):
