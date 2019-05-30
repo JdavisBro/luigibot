@@ -102,7 +102,7 @@ async def on_message(message):
                     if length == 1:
                         if message.author != user and message.author != prevuser and message.content != '{':
                             answer = answer.replace('{}', message.content + '{}')
-                            embed.add_field(name='The current answer is:', value='{}'.format(answer.replace('{}', '')), inline=False)
+                            embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
                             try:
                                 await message.add_reaction('✅')
                             except:
@@ -118,10 +118,10 @@ async def on_message(message):
                                 await message.delete()
                             except:
                                 pass
-                    elif message.content == 'space':
+                    elif message.content == 'space' or message.content == 'Space':
                         if message.author != user and message.author != prevuser:
                             answer = answer.replace('{}', '␣{}')
-                            embed.add_field(name='The current answer is:', value='{}'.format(answer.replace('{}', '')), inline=False)
+                            embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
                             try:
                                 await message.add_reaction('✅')
                             except:
