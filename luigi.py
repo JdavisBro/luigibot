@@ -31,6 +31,7 @@ async def prefix(bot, message):
 
 client = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!\nDo [PREFIX]help [COMMAND] to view full descriptions.")
 TOKEN = sys.argv[1]
+channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
 client.startTime = time.time()
 update=0
 on = {}
@@ -44,7 +45,7 @@ client.origauthor = {}
 @client.event
 async def on_ready():
     logging.info('Connected to DISCORD as {}'.format(str(client.user)))
-    game = discord.Game(name='with my LuigiBoard.')
+    game = discord.Game(name='with my LuigiBoard. o!help')
     await client.change_presence(status=discord.Status.online, activity=game)
     global appinfo, owner
     appinfo = await client.application_info()
@@ -54,7 +55,7 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         channel = ctx.channel
-        if channel.name == 'ask-ouija' or channel.name == 'askouija' or channel.name == 'ouija' or channel.name == 'ouijaboard' or channel.name == 'ask-luigi' or channel.name == 'askluigi' or channel.name == 'luigiboard':
+        if channel.name in channel_names:
             await ctx.send("Command not found, if you are trying to ask a question use o!ask")
         return
     raise error
@@ -79,12 +80,12 @@ def setuser(channelid,user):
 
 @client.event
 async def on_message(message):
-    global on, owner
+    global on, owner, channel_names
     if type(message.channel) is not discord.DMChannel:
         if message.guild.id not in on.keys():
             on[message.guild.id] = 0
         if on[message.guild.id] != 0:
-            if message.channel.name == "ask-ouija" or message.channel.name == 'askouija' or message.channel.name == 'ouija' or message.channel.name == 'ouijaboard' or message.channel.name == 'ask-luigi' or message.channel.name == 'askluigi' or message.channel.name == 'luigiboard':
+            if message.channel.name in channel_names:
                 if message.author == owner or message.author == message.guild.me: 
                     if message.author == message.guild.me:
                         return
@@ -97,11 +98,11 @@ async def on_message(message):
                 prevuser = client.prevuser[message.guild.id]
                 user = client.origauthor[message.guild.id]
                 length = len(message.content)
-                if message.author.bot == False:
+                if message.author.bot == True:
                     if length == 1:
                         if message.author != user and message.author != prevuser and message.content != '{':
                             answer = answer.replace('{}', message.content + '{}')
-                            embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
+                            embed.add_field(name='The current answer is:', value='{}'.format(answer.replace('{}', '')), inline=False)
                             try:
                                 await message.add_reaction('✅')
                             except:
@@ -120,7 +121,7 @@ async def on_message(message):
                     elif message.content == 'space':
                         if message.author != user and message.author != prevuser:
                             answer = answer.replace('{}', '␣{}')
-                            embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', '')), inline=False)
+                            embed.add_field(name='The current answer is:', value='{}'.format(answer.replace('{}', '')), inline=False)
                             try:
                                 await message.add_reaction('✅')
                             except:
@@ -143,14 +144,15 @@ async def on_message(message):
                             if answer == '':
                                 answer = ' '
                             answer=answer.replace("␣"," ")
-                            embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was `{}`'.format(question), color=2151680)
+                            embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
                             embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                            embed.add_field(name='The answer is', value='`{}`'.format(answer).replace('{}', ''), inline=False)
+                            embed.add_field(name='The answer is', value='"{}"'.format(answer).replace('{}', ''), inline=False)
                             msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
-                            await message.channel.send(embed=embed)
+                            pinme = await message.channel.send(embed=embed)
                             await msg.unpin()
                             await asyncio.sleep(0.5)
                             await msg1.delete()
+                            await pinme.pin()
                             answer = ''
                             logging.info('OFF in {}'.format(message.guild.name))
                         else:
@@ -209,20 +211,20 @@ async def ask(ctx,*,question):
         if on[ctx.guild.id] == 0:
             channel = ctx.channel
             user = ctx.author
-            if channel.name == 'ask-ouija' or channel.name == 'askouija' or channel.name == 'ouija' or channel.name == 'ouijaboard' or channel.name == 'ask-luigi' or channel.name == 'askluigi' or channel.name == 'luigiboard':
+            if channel.name in channel_names:
                 answer = ''
                 if '{}' in question:
                     answer = question
                 else:
                     answer = '{}'
                 if question != '':
-                    embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='`{}`'.format(question), color=6363163)
+                    embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='"{}"'.format(question), color=6363163)
                     embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                    embed.add_field(name='The current answer is:', value='`{}`'.format(answer.replace('{}', ' ')), inline=False)
+                    embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', ' ')), inline=False)
                     embed.set_footer(text='Question by {}'.format(user))
                     try:
                         role=discord.utils.get(ctx.guild.roles, name='Luigi')
-                        msg1=await ctx.send("{}: {} (in {}) has asked `{}`!".format(role.mention,user.name,ctx.guild.name,question))
+                        msg1=await ctx.send('{}: {} (in {}) has asked "{}"!'.format(role.mention,user.name,ctx.guild.name,question))
                     except:
                         pass
                     msg = await ctx.send(embed=embed)
@@ -372,14 +374,15 @@ async def updatesoon(ctx):
             setprevuser(ctx.guild.id,'')
             if answer == '':
                 answer = ' '
-            embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was `{}`'.format(question), color=2151680)
+            embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
             embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-            embed.add_field(name='The answer is', value='`{}`'.format(answer).replace('{}', ''), inline=False)
+            embed.add_field(name='The answer is', value='"{}"'.format(answer).replace('{}', ''), inline=False)
             msg1 = await channel.send("We have the answer to {}'s question!".format(user.mention))
-            await channel.send(embed=embed)
+            pinme = await channel.send(embed=embed)
             await msg.unpin()
             await asyncio.sleep(0.5)
             await msg1.delete()
+            await pinme.pin()
             answer = ''
             logging.info('FORCED OFF in {}'.format(channel.guild.name))
     await ctx.send("{}! Ouija instances shut down!".format(ctx.author.mention))
@@ -464,5 +467,23 @@ async def servers(ctx):
 #            for id, userint in listatm.items():
 #                if userint == number:
 #                    await ctx.send("{} is {}".format(number,client.get_user(id)))
+
+@client.command()
+async def messagepercent(ctx,content):
+    server = 0
+    user = 0
+    msg = await ctx.send("Search starting.")
+    for channel in ctx.guild.text_channels:
+        if channel.permissions_for(ctx.guild.me).read_messages:
+            if channel.permissions_for(ctx.guild.me).read_message_history:
+                if channel.permissions_for(ctx.author).read_messages:
+                    await msg.edit(content="Searching Channel {}.".format(channel))
+                    messages = await channel.history(limit=123).flatten()
+                    for message in messages:
+                        if message.content.count(content):
+                            server += message.content.count(content)
+                            if message.author == ctx.message.author:
+                                user += message.content.count(content)
+    await msg.edit(content="Search complete, you had {} messages containing {} and the server had {}, making {}% of the messages containing {} being from you!".format(user,content,server,round(user/server*100,2),content))
 
 client.run(TOKEN)
