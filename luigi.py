@@ -467,27 +467,27 @@ async def servers(ctx):
 #            for id, userint in listatm.items():
 #                if userint == number:
 #                    await ctx.send("{} is {}".format(number,client.get_user(id)))
-
-@client.command()
-async def messagepercent(ctx,*,content):
-    server = 0
-    user = 0
-    msg = await ctx.send("Search starting.")
-    for channel in ctx.guild.text_channels:
-        if channel.permissions_for(ctx.guild.me).read_messages:
-            if channel.permissions_for(ctx.guild.me).read_message_history:
-                if channel.permissions_for(ctx.author).read_messages:
-                    await msg.edit(content="Searching Channel {}.".format(channel))
-                    messages = await channel.history(limit=None).flatten()
-                    for message in messages:
-                        if message.content.count(content):
-                            server += message.content.count(content)
-                            if message.author == ctx.message.author:
-                                user += message.content.count(content)
-    await msg.edit(content="Search complete, {} had {} messages containing {} and the server had {}, making {}% of the messages containing {} being from you!".format(ctx.author.mention,user,content,server,round(user/server*100,2),content))
-
-@client.command()
-async def editnick(ctx,*,newnick: str):
-    await ctx.guild.me.edit(nick=newnick,reason="Hey!!!!!")
+#
+#@client.command()
+#async def messagepercent(ctx,*,content):
+#    server = 0
+#    user = 0
+#    msg = await ctx.send("Search starting.")
+#    for channel in ctx.guild.text_channels:
+#        if channel.permissions_for(ctx.guild.me).read_messages:
+#            if channel.permissions_for(ctx.guild.me).read_message_history:
+#                if channel.permissions_for(ctx.author).read_messages:
+#                    await msg.edit(content="Searching Channel {}.".format(channel))
+#                    messages = await channel.history(limit=None).flatten()
+#                    for message in messages:
+#                        if message.content.count(content):
+#                            server += message.content.count(content)
+#                            if message.author == ctx.message.author:
+#                                user += message.content.count(content)
+#    await msg.edit(content="Search complete, {} had {} messages containing {} and the server had {}, making {}% of the messages containing {} being from you!".format(,user,content,server,round(user/server*100,2),content))
+#
+#@client.command()
+#async def editnick(ctx,*,newnick: str):
+#    await ctx.guild.me.edit(nick=newnick,reason="Hey!!!!!")
 
 client.run(TOKEN)
