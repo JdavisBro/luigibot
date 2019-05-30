@@ -359,19 +359,19 @@ async def updatesoon(ctx):
         await ctx.send("Looks like there are no Ouija instances running!")
         return
     else:
-        await ctx.send("Closing Down {} Questions on 5 Minutes".format(str(ouijasactive)))
+        await ctx.send("Closing Down {} Questions in 5 Minutes".format(str(ouijasactive)))
     await asyncio.sleep(300)
     for id, channelid in on.items():
         if channelid != 0:
             channel = client.get_channel(channelid)
             await channel.send("Shutting Down Ouija.")
-            question = client.question[ctx.guild.id]
-            answer = client.answer[ctx.guild.id]
-            msg = client.msg[ctx.guild.id]
-            embed = client.messageembed[ctx.guild.id]
-            user = client.origauthor[ctx.guild.id]
-            on[ctx.guild.id] = 0
-            setprevuser(ctx.guild.id,'')
+            question = client.question[channel.guild.id]
+            answer = client.answer[channel.guild.id]
+            msg = client.msg[channel.guild.id]
+            embed = client.messageembed[channel.guild.id]
+            user = client.origauthor[channel.guild.id]
+            on[channel.guild.id] = 0
+            setprevuser(channel.guild.id,'')
             if answer == '':
                 answer = ' '
             embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
@@ -485,5 +485,9 @@ async def messagepercent(ctx,content):
                             if message.author == ctx.message.author:
                                 user += message.content.count(content)
     await msg.edit(content="Search complete, you had {} messages containing {} and the server had {}, making {}% of the messages containing {} being from you!".format(user,content,server,round(user/server*100,2),content))
+
+@client.command()
+async def editnick(ctx,*,newnick: str):
+    await ctx.guild.me.edit(nick=newnick,reason="Hey!!!!!")
 
 client.run(TOKEN)
