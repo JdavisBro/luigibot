@@ -86,9 +86,7 @@ async def on_message(message):
             on[message.guild.id] = 0
         if on[message.guild.id] != 0:
             if message.channel.name in channel_names:
-                if message.author == owner or message.author == message.guild.me: 
-                    if message.author == message.guild.me:
-                        return
+                if message.author == owner or message.author == message.guild.me:
                     if message.content.startswith("##"):
                         return
                 question = client.question[message.guild.id]
@@ -302,13 +300,9 @@ async def role(ctx):
         role = discord.utils.get(ctx.guild.roles, name='Luigi')
     except:
         msg=await ctx.send("This server doesn't have a Luigi role.")
-        await asyncio.sleep(10)
-        await msg.delete()
         return
     msg = await ctx.send('Ok, {} has been given the Luigi role!'.format(ctx.author.name))
     await member.add_roles(role)
-    await asyncio.sleep(10)
-    await msg.delete()
 
 @client.command()
 async def unrole(ctx):
@@ -318,14 +312,11 @@ async def unrole(ctx):
         role = discord.utils.get(ctx.guild.roles, name='Luigi')
     except:
         msg=await ctx.send("This server doesn't have a Luigi role.")
-        await asyncio.sleep(10)
-        await msg.delete()
         return
     msg=await ctx.send('Ok, {} has been removed from the Luigi role!'.format(ctx.author.name))
     member = ctx.author
     await member.remove_roles(role)
-    await asyncio.sleep(10)
-    await msg.delete()
+
 
 @client.command()
 @commands.is_owner()
@@ -342,7 +333,7 @@ async def say(ctx, *, say):
 @client.command()
 @commands.is_owner()
 async def updatesoon(ctx):
-    'Stops new Questions from being asks and shuts down ongoing ouijas after 5 minutes, only useable by the owner'
+    'Stops new Questions from being asks and shuts down ongoing ouijas after 5 minutes, only usable by the owner'
     ouijasactive = 0
     global on, update
     update = 1
@@ -352,9 +343,9 @@ async def updatesoon(ctx):
             channel = client.get_channel(channelid)
             try:
                 role=discord.utils.get(channel.guild.roles, name='Luigi')
-                await channel.send("{}! This Ouija will be shut down in 5 minutes as there will be an update soon.".format(role.mention))
+                await channel.send("## {}! This Ouija will be shut down in 5 minutes as there will be an update soon.".format(role.mention))
             except:
-                await channel.send("This Ouija will be shut down in 5 minutes as there will be an update soon.")
+                await channel.send("## This Ouija will be shut down in 5 minutes as there will be an update soon.")
     if ouijasactive == 0:
         await ctx.send("Looks like there are no Ouija instances running!")
         return
@@ -397,97 +388,5 @@ async def servers(ctx):
             servers+=guild.name
             servers+='\n'
         await ctx.send(servers)
-
-#@client.command()
-#async def reactors(ctx,msgid,channel: discord.TextChannel,emote: discord.Emoji,randomize=0):
-#    msgid=int(msgid)
-#    reactions=''
-#    reactors=''
-#    msg=''
-#    react=''
-#    history=await channel.history(limit=200).flatten()
-#    for message in history:
-#        if message.id == msgid:
-#            msg=message
-#        else:
-#            pass
-#    reactions=msg.reactions
-#    for reaction in reactions:
-#        if reaction.emoji==emote:
-#            react=reaction
-#    users = await react.users().flatten()
-#    for user in users:
-#        reactors+=user.name
-#        reactors+='\n'
-#    if randomize!=1:
-##        sentmessage=await ctx.send(content=reactors)
-#    else:
-#        times=1
-#        sentmessage=await ctx.send(content="{}{}/10".format(reactors,times))
-#        await asyncio.sleep(1)
-#        for x in range(9):
-#            times+=1
-#            reactors=''
-#            random.shuffle(users)
-#            for user in users:
-#                reactors+=user.name
-#                reactors+='\n'
-#            await sentmessage.edit(content="{}{}/10".format(reactors,times))
-#            await asyncio.sleep(1)
-#
-#@client.command()
-#async def getappcode(ctx):
-#    logging.info(type(ctx.channel) is discord.DMChannel)
-#    if type(ctx.channel) is discord.DMChannel:
-#        f = open("appcodes.txt")
-#        listatm=eval(f.read())
-#        if ctx.author.id not in listatm.keys():
-#            while True:
-#                userint=random.randint(1000000,9999999)
-#                if userint in listatm.values():
-#                    logging.info("HOW I SWEAR TO GOD")
-#                else:
-#                    listatm[ctx.author.id]=userint
-#                    fw=open("appcodes.txt","w")
-#                    fw.write(str(listatm))
-#                    fw.flush()
-#                    logging.info(ctx.author.name,"has been given the code",userint)
-#                    await ctx.send("Your code is {}".format(userint))
-#                    break
-#        else:
-#            await ctx.send("You already have a code. It's {}".format(listatm[ctx.author.id]))
-#
-#@client.command()
-#@commands.is_owner()
-#async def getcodefor(ctx,number: int):
-#    f = open("appcodes.txt")
-#    if type(ctx.channel) is discord.DMChannel:
-#        listatm=eval(f.read())
-#        if number in listatm.values():
-#            for id, userint in listatm.items():
-#                if userint == number:
-#                    await ctx.send("{} is {}".format(number,client.get_user(id)))
-#
-#@client.command()
-#async def messagepercent(ctx,*,content):
-#    server = 0
-#    user = 0
-#    msg = await ctx.send("Search starting.")
-#    for channel in ctx.guild.text_channels:
-#        if channel.permissions_for(ctx.guild.me).read_messages:
-#            if channel.permissions_for(ctx.guild.me).read_message_history:
-#                if channel.permissions_for(ctx.author).read_messages:
-#                    await msg.edit(content="Searching Channel {}.".format(channel))
-#                    messages = await channel.history(limit=None).flatten()
-#                    for message in messages:
-#                        if message.content.count(content):
-#                            server += message.content.count(content)
-#                            if message.author == ctx.message.author:
-#                                user += message.content.count(content)
-#    await msg.edit(content="Search complete, {} had {} messages containing {} and the server had {}, making {}% of the messages containing {} being from you!".format(,user,content,server,round(user/server*100,2),content))
-#
-#@client.command()
-#async def editnick(ctx,*,newnick: str):
-#    await ctx.guild.me.edit(nick=newnick,reason="Hey!!!!!")
 
 client.run(TOKEN)
