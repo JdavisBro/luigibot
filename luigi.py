@@ -29,7 +29,7 @@ async def prefix(bot, message):
     else:
         return default_prefix
 
-client = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!\nDo [PREFIX]help [COMMAND] to view full descriptions.")
+client = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
 TOKEN = sys.argv[1]
 channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
 client.startTime = time.time()
@@ -96,7 +96,7 @@ async def on_message(message):
                 prevuser = client.prevuser[message.guild.id]
                 user = client.origauthor[message.guild.id]
                 length = len(message.content)
-                if message.author.bot == False:
+                if not message.author.bot:
                     if length == 1:
                         if message.author != user and message.author != prevuser and message.content != '{':
                             answer = answer.replace('{}', message.content + '{}')
@@ -210,55 +210,48 @@ async def ask(ctx,*,question):
             channel = ctx.channel
             user = ctx.author
             if channel.name in channel_names:
+                on[ctx.guild.id] = ctx.channel.id
+                logging.info("ON in {}".format(ctx.guild.name))
                 answer = ''
                 if '{}' in question:
                     answer = question
                 else:
                     answer = '{}'
-                if question != '':
-                    embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='"{}"'.format(question), color=6363163)
-                    embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                    embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', ' ')), inline=False)
-                    embed.set_footer(text='Question by {}'.format(user))
-                    try:
-                        role=discord.utils.get(ctx.guild.roles, name='Luigi')
-                        msg1=await ctx.send('{}: {} (in {}) has asked "{}"!'.format(role.mention,user.name,ctx.guild.name,question))
-                    except:
-                        pass
-                    msg = await ctx.send(embed=embed)
-                    try:
-                        await msg.pin()
-                    except:
-                        pass
-                    await asyncio.sleep(0.5)
-                    try:
-                        await msg1.delete()
-                    except:
-                        pass
-                    embed.clear_fields()
-                    setuser(ctx.guild.id,user)
-                    setquestion(ctx.guild.id,question)
-                    setanswer(ctx.guild.id,answer)
-                    setembed(ctx.guild.id,embed)
-                    setmsg(ctx.guild.id,msg)
-                    setprevuser(ctx.guild.id,"")
-                    on[ctx.guild.id] = ctx.channel.id
-                    logging.info("ON in {}".format(ctx.guild.name))
-                else:
-                    await ctx.send("Hey, you need to ask something!!")
+                setuser(ctx.guild.id,user)
+                setquestion(ctx.guild.id,question)
+                setanswer(ctx.guild.id,answer)
+                setmsg(ctx.guild.id,msg)
+                setprevuser(ctx.guild.id,"")
+                embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='"{}"'.format(question), color=6363163)
+                embed.set_author(name='Ouija Question!', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', ' ')), inline=False)
+                embed.set_footer(text='Question by {} ({})'.format(user.display_name,user))
+                try:
+                    role=discord.utils.get(ctx.guild.roles, name='Luigi')
+                    msg1=await ctx.send('{}: {} (in {}) has asked "{}"!'.format(role.mention,user.name,ctx.guild.name,question))
+                except:
+                    pass
+                msg = await ctx.send(embed=embed)
+                try:
+                    await msg.pin()
+                except:
+                    pass
+                await asyncio.sleep(0.5)
+                try:
+                    await msg1.delete()
+                except:
+                    pass
+                embed.clear_fields()
+                setembed(ctx.guild.id,embed)
             else:
                 await asyncio.sleep(0.5)
-                logging.info('Somone attempted to start a Ouija in a channel that is not named "ask-ouija"')
         else:
             await asyncio.sleep(0.5)
             try:
                 await ctx.message.delete()
             except:
                 pass
-            infomessage=await ctx.send("There is already a question going on in this server.")
-            logging.info('Someone attempted to start a Ouija while one is already going.')
-            await asyncio.sleep(3)
-            await infomessage.delete()
+            await ctx.send("## There is already a question going on in this server.",delete_after=5)
     else:
         await ctx.send("Ouija is not allowed to start as there is an update soon!")
 
@@ -272,15 +265,12 @@ async def exit(ctx):
 @client.command()
 async def setprefix(ctx,prefixToBeSet="o!"):
     'Sets the command prefix for this server, only usable by a user that has the Manage Server permissions, if the prefix you want contains space put it in "quotes". Defaults to `o!` if no prefix is specified'
-    if ctx.author.guild_permissions.manage_guild or ctx.author == owner:
-        if "```" not in prefixToBeSet:
-            prefixes[str(ctx.guild.id)] = prefixToBeSet
-            await ctx.send("Prefix for {} set to `{}`".format(ctx.guild.name,prefixToBeSet))
-            with open("prefixes.json","w") as f:
-                f.write(str(json.dumps(prefixes)))
-                f.flush()
-        else:
-            await ctx.send("You can't have ``` in your prefix.")
+    if ctx.author.guild_permissions.manage_guild or ctx.author == ctx.guild.owner:
+        prefixes[str(ctx.guild.id)] = prefixToBeSet
+        await ctx.send("Prefix for {} set to `{}`".format(ctx.guild.name,prefixToBeSet))
+        with open("prefixes.json","w") as f:
+            f.write(str(json.dumps(prefixes)))
+            f.flush()
 
 @client.command()
 async def uptime(ctx):
@@ -299,9 +289,9 @@ async def role(ctx):
     try:
         role = discord.utils.get(ctx.guild.roles, name='Luigi')
     except:
-        msg=await ctx.send("This server doesn't have a Luigi role.")
+        await ctx.send("This server doesn't have a Luigi role.")
         return
-    msg = await ctx.send('Ok, {} has been given the Luigi role!'.format(ctx.author.name))
+    await ctx.send('Ok, {} has been given the Luigi role!'.format(ctx.author.name))
     await member.add_roles(role)
 
 @client.command()
@@ -311,9 +301,9 @@ async def unrole(ctx):
     try:
         role = discord.utils.get(ctx.guild.roles, name='Luigi')
     except:
-        msg=await ctx.send("This server doesn't have a Luigi role.")
+        await ctx.send("This server doesn't have a Luigi role.")
         return
-    msg=await ctx.send('Ok, {} has been removed from the Luigi role!'.format(ctx.author.name))
+    await ctx.send('Ok, {} has been removed from the Luigi role!'.format(ctx.author.name))
     member = ctx.author
     await member.remove_roles(role)
 
@@ -327,8 +317,8 @@ async def say(ctx, *, say):
     except:
         pass
     await ctx.channel.trigger_typing()
-    await asyncio.sleep(0.5)
-    await ctx.send(say)
+    await asyncio.sleep(0.2)
+    await ctx.send(say.format(ctx))
 
 @client.command()
 @commands.is_owner()
@@ -337,7 +327,7 @@ async def updatesoon(ctx):
     ouijasactive = 0
     global on, update
     update = 1
-    for id, channelid in on.items():
+    for channelid in on.values():
         if channelid != 0:
             ouijasactive += 1
             channel = client.get_channel(channelid)
@@ -352,7 +342,7 @@ async def updatesoon(ctx):
     else:
         await ctx.send("Closing Down {} Questions in 5 Minutes".format(str(ouijasactive)))
     await asyncio.sleep(300)
-    for id, channelid in on.items():
+    for channelid in on.values():
         if channelid != 0:
             channel = client.get_channel(channelid)
             await channel.send("Shutting Down Ouija.")
@@ -380,13 +370,12 @@ async def updatesoon(ctx):
 
 @client.command()
 @commands.is_owner()
+@commands.dm_only()
 async def servers(ctx):
     'Lists the servers the bot is in, only usable by the owner in DMs'
-    if type(ctx.channel) is discord.DMChannel:
-        servers=''
-        for guild in client.guilds:
-            servers+=guild.name
-            servers+='\n'
-        await ctx.send(servers)
+    guilds = ''
+    for guild in client.guilds:
+        guilds += guild.name + '\n'
+    await ctx.send(guilds)
 
 client.run(TOKEN)
