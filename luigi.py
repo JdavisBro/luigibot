@@ -231,7 +231,7 @@ async def ask(ctx,*,question):
                 except:
                     msg = await ctx.send(content="##",embed=embed)
                     pass
-                msg.edit(content="",embed=embed)
+                await msg.edit(content="",embed=embed)
                 try:
                     await msg.pin()
                 except:
