@@ -227,19 +227,16 @@ async def ask(ctx,*,question):
                 embed.set_footer(text='Question by {} ({})'.format(user.display_name,user))
                 try:
                     role=discord.utils.get(ctx.guild.roles, name='Luigi')
-                    msg1=await ctx.send('{}: {} (in {}) has asked "{}"!'.format(role.mention,user.name,ctx.guild.name,question))
+                    msg = await ctx.send(content='## {}: {} (in {}) has asked "{}"!'.format(role.mention,user.name,ctx.guild.name,question),embed=embed)
                 except:
+                    msg = await ctx.send(content="##",embed=embed)
                     pass
-                msg = await ctx.send(embed=embed)
+                msg.edit(content="",embed=embed)
                 try:
                     await msg.pin()
                 except:
                     pass
                 await asyncio.sleep(0.5)
-                try:
-                    await msg1.delete()
-                except:
-                    pass
                 embed.clear_fields()
                 setmsg(ctx.guild.id,msg)
                 setembed(ctx.guild.id,embed)
