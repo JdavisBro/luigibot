@@ -29,8 +29,7 @@ There is also a feature to have a role that will get pinged when a new Question 
 
 > Made by JdavisBro
 
-[Bot Invite](https://discordapp.com/api/oauth2/authorize?client_id=557320040127397888&scope=bot&permissions=0)
-[Support Server](https://discord.gg/UGsdqwk)
+[Me Hosting Bot Invite](https://discordapp.com/api/oauth2/authorize?client_id=557320040127397888&scope=bot&permissions=0)
 
 ## Self Hosting
 
