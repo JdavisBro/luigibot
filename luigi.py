@@ -220,7 +220,6 @@ async def ask(ctx,*,question):
                 setuser(ctx.guild.id,user)
                 setquestion(ctx.guild.id,question)
                 setanswer(ctx.guild.id,answer)
-                setmsg(ctx.guild.id,msg)
                 setprevuser(ctx.guild.id,"")
                 embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='"{}"'.format(question), color=6363163)
                 embed.set_author(name='Ouija Question!', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
@@ -242,6 +241,7 @@ async def ask(ctx,*,question):
                 except:
                     pass
                 embed.clear_fields()
+                setmsg(ctx.guild.id,msg)
                 setembed(ctx.guild.id,embed)
             else:
                 await asyncio.sleep(0.5)
