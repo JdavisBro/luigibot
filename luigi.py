@@ -89,6 +89,9 @@ async def on_message(message):
                 if message.author == owner or message.author == message.guild.me:
                     if message.content.startswith("##"):
                         return
+                if on[message.guild.id] == 1:
+                    await message.delete()
+                    return
                 question = client.question[message.guild.id]
                 answer = client.answer[message.guild.id]
                 msg = client.msg[message.guild.id]
@@ -207,10 +210,9 @@ async def ask(ctx,*,question):
         if ctx.guild.id not in on.keys():
             on[ctx.guild.id] = 0
         if on[ctx.guild.id] == 0:
-            channel = ctx.channel
             user = ctx.author
-            if channel.name in channel_names:
-                on[ctx.guild.id] = ctx.channel.id
+            if ctx.channel.name in channel_names:
+                on[ctx.guild.id] = 1
                 logging.info("ON in {}".format(ctx.guild.name))
                 answer = ''
                 if '{}' in question:
@@ -240,6 +242,7 @@ async def ask(ctx,*,question):
                 embed.clear_fields()
                 setmsg(ctx.guild.id,msg)
                 setembed(ctx.guild.id,embed)
+                on[ctx.guild.id] = ctx.channel.id
             else:
                 await asyncio.sleep(0.5)
         else:
