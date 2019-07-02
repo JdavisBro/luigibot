@@ -308,17 +308,35 @@ async def unrole(ctx):
     await member.remove_roles(role)
 
 
-@client.command()
+@client.group(aliases=['send'])
 @commands.is_owner()
-async def say(ctx, *, say):
+async def say(ctx):
     'Makes the bot say something, only usable by the owner'
+    if ctx.invoked_subcommand is None:
+        await ctx.send_help(ctx.command)
+    
+
+@say.command(name='here',aliases=['h'])
+async def say_here(ctx,*,say):
+    'Makes say in the channel you use this in lol'
     try:
         await ctx.message.delete()
     except:
         pass
     await ctx.channel.trigger_typing()
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.4)
     await ctx.send(say.format(ctx))
+
+@say.command(name='channel')
+async def say_channel(ctx,channel: discord.TextChannel,*,say):
+    'Makes say in a channel lol'
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+    await channel.trigger_typing()
+    await asyncio.sleep(0.4)
+    await channel.send(say.format(ctx))
 
 @client.command()
 @commands.is_owner()
