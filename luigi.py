@@ -399,14 +399,16 @@ async def servers(ctx):
     await ctx.send(guilds)
 
 @bot.command()
-async def mood(ctx,user: discord.Member=None):
+async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None):
     'Finds out how a user is doing using sentiment analysis'
     if not user:
         user = ctx.author
+    if not channel:
+        channel = ctx.channel
     async with ctx.channel.typing():
         counter = 0             # Getting user's last 15 messages
         user_messages = []
-        async for message in ctx.channel.history(limit=200):
+        async for message in channel.history(limit=200):
             if (not message.content[:2] == "o!") and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
                 user_messages.append(message.content)
                 counter += 1
