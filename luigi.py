@@ -173,6 +173,8 @@ async def on_message(message):
                                 await message.delete()
                             except:
                                 pass
+                    elif message.guild.me.mentioned_in(message) and len(message.content) == len(message.guild.me.mention):
+                        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `PREFIXask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides { and }), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {}".format(prefix(bot, message)))
                     else:
                         await bot.process_commands(message)
                         try:
@@ -409,18 +411,16 @@ async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None)
         counter = 0             # Getting user's last 15 messages
         user_messages = []
         async for message in channel.history(limit=200):
-            if (not message.content[:2] == "o!") and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
+            if (not message.content.startswith('o!')) and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
                 user_messages.append(message.content)
                 counter += 1
             if counter > 15:
                 break
-
         sentiments = []
         for message in user_messages:
             opinion = TextBlob(message).sentiment # Getting opinion of message
             sentiments.append((opinion.polarity + 1) / 2) # Adding message's sentiment to sentiment array (opinion.sentiment.polarity is -1.0 - 1.0, so it is normalized)
         overall_sentiment = sum(sentiments) / len(sentiments) # Averaging out sentiments
-
     await ctx.send("{} is {}% happy!".format(user.display_name, int(overall_sentiment * 100))) # overall_sentiment is converted to an percentage without a fractional
     
 bot.run(TOKEN)
