@@ -173,7 +173,7 @@ async def on_message(message):
                                 await message.delete()
                             except:
                                 pass
-                    elif message.guild.me.mentioned_in(message) and len(message.content) == len(message.guild.me.mention):
+                    elif message.guild.me.mentioned_in(message) and len(message.content) < 26:
                         await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `PREFIXask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides { and }), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {}".format(prefix(bot, message)))
                     else:
                         await bot.process_commands(message)
