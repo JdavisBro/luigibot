@@ -26,7 +26,6 @@ default_prefix = "o!"
 
 async def prefix(bot, message):
     if type(message.channel) is not discord.DMChannel:
-        id = str(message.guild.id)
         return prefixes.get(id, default_prefix)
     else:
         return default_prefix
@@ -173,8 +172,6 @@ async def on_message(message):
                                 await message.delete()
                             except:
                                 pass
-                    elif message.guild.me.mentioned_in(message) and len(message.content) < 26:
-                        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `PREFIXask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides { and }), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {}".format(prefix(bot, message)))
                     else:
                         await bot.process_commands(message)
                         try:
@@ -188,23 +185,25 @@ async def on_message(message):
                     except:
                         pass
             else:
-                if message.author.bot == False:
+                if not message.author.bot:
                     if message.content.startswith("if you are real say "):
                         send=message.content.replace("if you are real say ","")
                         await message.channel.send("{}, lol".format(send))
                 await bot.process_commands(message)
+        elif not message.author.bot and message.content.startswith("if you are real say "):
+            send=message.content.replace("if you are real say ","")
+            await message.channel.send("{}, lol".format(send))
+        elif message.content == "<@{}>".format(bot.user.id):
+            await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `PREFIXask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {}".format(prefix(bot,message)))
         else:
-            if message.author.bot == False:
-                if message.content.startswith("if you are real say "):
-                    send=message.content.replace("if you are real say ","")
-                    await message.channel.send("{}, lol".format(send))
-                await bot.process_commands(message)
-    else:
-        if message.author.bot == False:
-            if message.content.startswith("if you are real say "):
-                send=message.content.replace("if you are real say ","")
-                await message.channel.send("{}, lol".format(send))
             await bot.process_commands(message)
+    elif not message.author.bot and message.content.startswith("if you are real say "):
+        send=message.content.replace("if you are real say ","")
+        await message.channel.send("{}, lol".format(send))
+    elif message.content == "<@{}>".format(bot.user.id):
+        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `PREFIXask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {}".format(prefix(bot,message)))
+    else:
+        await bot.process_commands(message)
 
 @bot.command()
 async def ask(ctx,*,question):
