@@ -7,6 +7,8 @@ from discord.ext.commands import CommandNotFound
 import sys
 import logging
 import json
+# Text analysis for mood command
+from textblob import TextBlob
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -29,29 +31,29 @@ async def prefix(bot, message):
     else:
         return default_prefix
 
-client = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
+bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
 TOKEN = sys.argv[1]
 channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
-client.startTime = time.time()
+bot.startTime = time.time()
 update=0
 on = {}
-client.question = {}
-client.answer = {}
-client.msg = {}
-client.messageembed = {}
-client.prevuser = {}
-client.origauthor = {}
+bot.question = {}
+bot.answer = {}
+bot.msg = {}
+bot.messageembed = {}
+bot.prevuser = {}
+bot.origauthor = {}
 
-@client.event
+@bot.event
 async def on_ready():
-    logging.info('Connected to DISCORD as {}'.format(str(client.user)))
+    logging.info('Connected to DISCORD as {}'.format(str(bot.user)))
     game = discord.Game(name='with my LuigiBoard. o!help')
-    await client.change_presence(status=discord.Status.online, activity=game)
+    await bot.change_presence(status=discord.Status.online, activity=game)
     global appinfo, owner
-    appinfo = await client.application_info()
+    appinfo = await bot.application_info()
     owner = appinfo.owner
 
-@client.event
+@bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         channel = ctx.channel
@@ -61,24 +63,24 @@ async def on_command_error(ctx, error):
     raise error
 
 def setquestion(channelid,question):
-    client.question[channelid] = question
+    bot.question[channelid] = question
 
 def setanswer(channelid,answer):
-    client.answer[channelid] = answer
+    bot.answer[channelid] = answer
 
 def setmsg(channelid,msg):
-    client.msg[channelid] = msg
+    bot.msg[channelid] = msg
 
 def setembed(channelid,messageembed):
-    client.messageembed[channelid] = messageembed
+    bot.messageembed[channelid] = messageembed
 
 def setprevuser(channelid,prevuser):
-    client.prevuser[channelid] = prevuser
+    bot.prevuser[channelid] = prevuser
 
 def setuser(channelid,user):
-    client.origauthor[channelid] = user
+    bot.origauthor[channelid] = user
 
-@client.event
+@bot.event
 async def on_message(message):
     global on, owner, channel_names
     if type(message.channel) is not discord.DMChannel:
@@ -92,12 +94,12 @@ async def on_message(message):
                 if on[message.guild.id] == 1:
                     await message.delete()
                     return
-                question = client.question[message.guild.id]
-                answer = client.answer[message.guild.id]
-                msg = client.msg[message.guild.id]
-                embed = client.messageembed[message.guild.id]
-                prevuser = client.prevuser[message.guild.id]
-                user = client.origauthor[message.guild.id]
+                question = bot.question[message.guild.id]
+                answer = bot.answer[message.guild.id]
+                msg = bot.msg[message.guild.id]
+                embed = bot.messageembed[message.guild.id]
+                prevuser = bot.prevuser[message.guild.id]
+                user = bot.origauthor[message.guild.id]
                 length = len(message.content)
                 if not message.author.bot:
                     if length == 1:
@@ -172,13 +174,13 @@ async def on_message(message):
                             except:
                                 pass
                     else:
-                        await client.process_commands(message)
+                        await bot.process_commands(message)
                         try:
                             await message.delete()
                         except:
                             pass
                 else:
-                    await client.process_commands(message)
+                    await bot.process_commands(message)
                     try:
                         await message.delete()
                     except:
@@ -188,21 +190,21 @@ async def on_message(message):
                     if message.content.startswith("if you are real say "):
                         send=message.content.replace("if you are real say ","")
                         await message.channel.send("{}, lol".format(send))
-                await client.process_commands(message)
+                await bot.process_commands(message)
         else:
             if message.author.bot == False:
                 if message.content.startswith("if you are real say "):
                     send=message.content.replace("if you are real say ","")
                     await message.channel.send("{}, lol".format(send))
-                await client.process_commands(message)
+                await bot.process_commands(message)
     else:
         if message.author.bot == False:
             if message.content.startswith("if you are real say "):
                 send=message.content.replace("if you are real say ","")
                 await message.channel.send("{}, lol".format(send))
-            await client.process_commands(message)
+            await bot.process_commands(message)
 
-@client.command()
+@bot.command()
 async def ask(ctx,*,question):
     "Asks a question! Can only be used in a channel named 'ask-ouija'"
     global update
@@ -255,14 +257,14 @@ async def ask(ctx,*,question):
     else:
         await ctx.send("Ouija is not allowed to start as there is an update soon!")
 
-@client.command()
+@bot.command()
 @commands.is_owner()
 async def exit(ctx):
     'Stops the bot, only usable by the owner.'
     await ctx.send('Goodbye! 👋')
-    await client.close()
+    await bot.close()
 
-@client.command()
+@bot.command()
 async def setprefix(ctx,prefixToBeSet="o!"):
     'Sets the command prefix for this server, only usable by a user that has the Manage Server permissions, if the prefix you want contains space put it in "quotes". Defaults to `o!` if no prefix is specified'
     if ctx.author.guild_permissions.manage_guild or ctx.author == ctx.guild.owner:
@@ -272,17 +274,17 @@ async def setprefix(ctx,prefixToBeSet="o!"):
             f.write(str(json.dumps(prefixes)))
             f.flush()
 
-@client.command()
+@bot.command()
 async def uptime(ctx):
     'Shows you how long the bot has been online'
     currentTime = time.time()
-    uptime = int(round(currentTime - client.startTime))
+    uptime = int(round(currentTime - bot.startTime))
     uptime = str(datetime.timedelta(seconds=uptime))
     colour = discord.Colour.from_rgb(random.randint(1,255),random.randint(1,255),random.randint(1,255))
     embed = discord.Embed(title="I have been up for", description=uptime, color=colour)
     await ctx.send(embed=embed)
 
-@client.command()
+@bot.command()
 async def role(ctx):
     'Gives you the Luigi role if it exists in the server, the role gets pinged whenever a new Ouija starts!'
     member = ctx.author
@@ -294,7 +296,7 @@ async def role(ctx):
     await ctx.send('Ok, {} has been given the Luigi role!'.format(ctx.author.name))
     await member.add_roles(role)
 
-@client.command()
+@bot.command()
 async def unrole(ctx):
     'Removes the Luigi role if you have it (and if it exists in the server)!'
     member = ctx.author
@@ -308,7 +310,7 @@ async def unrole(ctx):
     await member.remove_roles(role)
 
 
-@client.group(aliases=['send'])
+@bot.group(aliases=['send'])
 @commands.is_owner()
 async def say(ctx):
     'Makes the bot say something, only usable by the owner'
@@ -338,7 +340,7 @@ async def say_channel(ctx,channel: discord.TextChannel,*,say):
     await asyncio.sleep(0.4)
     await channel.send(say.format(ctx))
 
-@client.command()
+@bot.command()
 @commands.is_owner()
 async def updatesoon(ctx):
     'Stops new Questions from being asks and shuts down ongoing ouijas after 5 minutes, only usable by the owner'
@@ -348,7 +350,7 @@ async def updatesoon(ctx):
     for channelid in on.values():
         if channelid != 0:
             ouijasactive += 1
-            channel = client.get_channel(channelid)
+            channel = bot.get_channel(channelid)
             try:
                 role=discord.utils.get(channel.guild.roles, name='Luigi')
                 await channel.send("## {}! This Ouija will be shut down in 5 minutes as there will be an update soon.".format(role.mention))
@@ -362,13 +364,13 @@ async def updatesoon(ctx):
     await asyncio.sleep(300)
     for channelid in on.values():
         if channelid != 0:
-            channel = client.get_channel(channelid)
+            channel = bot.get_channel(channelid)
             await channel.send("Shutting Down Ouija.")
-            question = client.question[channel.guild.id]
-            answer = client.answer[channel.guild.id]
-            msg = client.msg[channel.guild.id]
-            embed = client.messageembed[channel.guild.id]
-            user = client.origauthor[channel.guild.id]
+            question = bot.question[channel.guild.id]
+            answer = bot.answer[channel.guild.id]
+            msg = bot.msg[channel.guild.id]
+            embed = bot.messageembed[channel.guild.id]
+            user = bot.origauthor[channel.guild.id]
             on[channel.guild.id] = 0
             setprevuser(channel.guild.id,'')
             if answer == '':
@@ -386,14 +388,37 @@ async def updatesoon(ctx):
             logging.info('FORCED OFF in {}'.format(channel.guild.name))
     await ctx.send("{}! Ouija instances shut down!".format(ctx.author.mention))
 
-@client.command()
+@bot.command()
 @commands.is_owner()
 @commands.dm_only()
 async def servers(ctx):
     'Lists the servers the bot is in, only usable by the owner in DMs'
     guilds = ''
-    for guild in client.guilds:
+    for guild in bot.guilds:
         guilds += guild.name + '\n'
     await ctx.send(guilds)
 
-client.run(TOKEN)
+@bot.command()
+async def mood(ctx,user: discord.Member=None):
+    'Finds out how a user is doing using sentiment analysis'
+    if not user:
+        user = ctx.author
+
+    counter = 0             # Getting user's last 15 messages
+    user_messages = []
+    async for message in ctx.channel.history(limit=200):
+        if (not message.content[:2] == "o!") and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
+            user_messages.append(message.content)
+            counter += 1
+        if counter > 15:
+            break
+    
+    sentiments = []
+    for message in user_messages:
+        opinion = TextBlob(message).sentiment # Getting opinion of message
+        sentiments.append((opinion.polarity + 1) / 2) # Adding message's sentiment to sentiment array (opinion.sentiment.polarity is -1.0 - 1.0, so it is normalized)
+    overall_sentiment = sum(sentiments) / len(sentiments) # Averaging out sentiments
+
+    await ctx.send("{} is {}% happy!".format(user.display_name, int(overall_sentiment * 100))) # overall_sentiment is converted to an percentage without a fractional
+    
+bot.run(TOKEN)
