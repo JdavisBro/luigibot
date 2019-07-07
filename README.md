@@ -29,6 +29,9 @@ There is also a feature to have a role that will get pinged when a new Question 
 
 > Made by JdavisBro
 
+### Mood command
+Mood command made by lit af guy [01-Grimm](https://github.com/01-Grimm/) from his [fork](https://github.com/01-Grimm/luigibot). Does a sentimental analysis on your last 15 out of 200 messages in a channel and tells you the % of happy you are.
+
 [Me Hosting Bot Invite](https://discordapp.com/api/oauth2/authorize?client_id=557320040127397888&scope=bot&permissions=0)
 
 ## Self Hosting
