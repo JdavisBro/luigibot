@@ -7,6 +7,8 @@ from discord.ext.commands import CommandNotFound
 import sys
 import logging
 import json
+# Text analysis for mood command
+from textblob import TextBlob
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -396,4 +398,27 @@ async def servers(ctx):
         guilds += guild.name + '\n'
     await ctx.send(guilds)
 
+@bot.command()
+async def mood(ctx,user: discord.Member=None):
+    'Finds out how a user is doing using sentiment analysis'
+    if not user:
+        user = ctx.author
+
+    counter = 0             # Getting user's last 15 messages
+    user_messages = []
+    async for message in ctx.channel.history(limit=200):
+        if (not message.content[:2] == "o!") and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
+            user_messages.append(message.content)
+            counter += 1
+        if counter > 15:
+            break
+    
+    sentiments = []
+    for message in user_messages:
+        opinion = TextBlob(message).sentiment # Getting opinion of message
+        sentiments.append((opinion.polarity + 1) / 2) # Adding message's sentiment to sentiment array (opinion.sentiment.polarity is -1.0 - 1.0, so it is normalized)
+    overall_sentiment = sum(sentiments) / len(sentiments) # Averaging out sentiments
+
+    await ctx.send("{} is {}% happy!".format(user.display_name, int(overall_sentiment * 100))) # overall_sentiment is converted to an percentage without a fractional
+    
 bot.run(TOKEN)
