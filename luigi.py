@@ -26,7 +26,7 @@ default_prefix = "o!"
 
 async def prefix(bot, message):
     if type(message.channel) is not discord.DMChannel:
-        return prefixes.get(id, default_prefix)
+        return prefixes.get(message.guild.id, default_prefix)
     else:
         return default_prefix
 
