@@ -408,15 +408,16 @@ async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None)
         channel = ctx.channel
     async with ctx.channel.typing():
         counter = 0             # Getting user's last 15 messages
+        serverprefix = await prefix(bot,ctx.message)
         user_messages = []
         async for message in channel.history(limit=200):
-            if (not message.content.startswith(prefix(bot,ctx.message))) and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
+            if (not message.content.startswith(serverprefix)) and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
                 user_messages.append(message.content)
                 counter += 1
             if counter > 15:
                 break
         if counter == 0:
-            await ctx.send("You have send 0 messages (not beginning with '{}') within the last 200 messages in this channel.".format(prefix(bot,ctx.message)))
+            await ctx.send("You have send 0 messages (not beginning with '{}') within the last 200 messages in this channel.".format(serverprefix))
             return
         sentiments = []
         for message in user_messages:
