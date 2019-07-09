@@ -415,6 +415,8 @@ async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None)
                 counter += 1
             if counter > 15:
                 break
+        if counter == 0:
+            await ctx.send("You have send 0 messages (not beginning with 'o!') within the last 200 messages in this channel.")
         sentiments = []
         for message in user_messages:
             opinion = TextBlob(message).sentiment # Getting opinion of message
