@@ -23,7 +23,7 @@ with open("prefixes.json","r") as f:
 default_prefix = "o!"
 
 def prefix(bot, message):
-    return str(prefixes.get(str(message.guild.id), default_prefix))
+    return str(prefixes.get(message.guild.id, default_prefix))
 
 bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
 TOKEN = sys.argv[1]
@@ -37,16 +37,18 @@ bot.msg = {}
 bot.messageembed = {}
 bot.prevuser = {}
 bot.origauthor = {}
+help_message = "Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme <https://www.github.com/jdavisbro/luigibot> permissions that I require or that are optional are also stated on that page. \nAfter that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`"
 
 @bot.event
 async def on_ready():
-    logging.info('----------------------------'+'-'*(len(str(bot.user))+len(str(bot.user.id))))
     game = discord.Game(name='with my LuigiBoard. o!help')
     await bot.change_presence(status=discord.Status.online, activity=game)
     global appinfo, owner
     appinfo = await bot.application_info()
     owner = appinfo.owner
-    logging.info('Connected to DISCORD as {} -- {}'.format(str(bot.user),bot.user.id))
+    logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
+    logging.info('| Connected to DISCORD as {} -- {} |'.format(str(bot.user),bot.user.id))
+    logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -83,9 +85,8 @@ async def on_message(message):
             on[message.guild.id] = 0
         if on[message.guild.id] != 0:
             if message.channel.name in channel_names:
-                if message.author == owner or message.author == message.guild.me:
-                    if message.content.startswith("##"):
-                        return
+                if (message.author == owner or message.author == message.guild.me) and message.content.startswith("##"):
+                    return
                 if on[message.guild.id] == 1:
                     await message.delete()
                     return
@@ -97,77 +98,52 @@ async def on_message(message):
                 user = bot.origauthor[message.guild.id]
                 length = len(message.content)
                 if not message.author.bot:
-                    if length == 1:
-                        if message.author != user and message.author != prevuser and message.content != '{':
-                            answer = answer.replace('{}', message.content + '{}')
-                            embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
-                            try:
-                                await message.add_reaction('✅')
-                            except:
-                                pass
-                            await msg.edit(embed=embed)
-                            embed.clear_fields()
-                            prevuser = message.author
-                            setprevuser(message.guild.id,prevuser)
-                            setanswer(message.guild.id,answer)
-                            await asyncio.sleep(0.5)
-                        else:
-                            try:
-                                await message.delete()
-                            except:
-                                pass
-                    elif message.content == 'space' or message.content == 'Space':
-                        if message.author != user and message.author != prevuser:
-                            answer = answer.replace('{}', '␣{}')
-                            embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
-                            try:
-                                await message.add_reaction('✅')
-                            except:
-                                pass
-                            await msg.edit(embed=embed)
-                            embed.clear_fields()
-                            prevuser = message.author
-                            setprevuser(message.guild.id,prevuser)
-                            setanswer(message.guild.id,answer)
-                            await asyncio.sleep(0.5)
-                        else:
-                            try:
-                                await message.delete()
-                            except:
-                                pass
-                    elif message.content == 'goodbye' or message.content == 'Goodbye':
-                        if message.author != user and message.author != prevuser:
-                            on[message.guild.id] = 0
-                            setprevuser(message.guild.id,'')
-                            if answer == '':
-                                answer = ' '
-                            answer=answer.replace("␣"," ")
-                            embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
-                            embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                            embed.add_field(name='The answer is', value='"{}"'.format(answer).replace('{}', ''), inline=False)
-                            msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
-                            pinme = await message.channel.send(embed=embed)
-                            await msg.unpin()
-                            await asyncio.sleep(0.5)
-                            await msg1.delete()
-                            await pinme.pin()
-                            answer = ''
-                            logging.info('OFF in {}'.format(message.guild.name))
-                        else:
-                            try:
-                                await message.delete()
-                            except:
-                                pass
-                    elif message.content == 'stopouija':
-                        if message.author == owner:
-                            on[message.guild.id] = 0
-                            logging.info('{} used stopouija to stop the question going on in {}'.format(str(owner),message.guild.name))
-                        else:
-                            logging.info('A user who is not {} attempted to use stopouija in {}'.format(str(owner),message.guild.name))
-                            try:
-                                await message.delete()
-                            except:
-                                pass
+                    if length == 1 and message.author != user and message.author != prevuser and message.content != '{':
+                        answer = answer.replace('{}', message.content + '{}')
+                        embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
+                        try:
+                            await message.add_reaction('✅')
+                        except:
+                            pass
+                        await msg.edit(embed=embed)
+                        embed.clear_fields()
+                        prevuser = message.author
+                        setprevuser(message.guild.id,prevuser)
+                        setanswer(message.guild.id,answer)
+                        await asyncio.sleep(0.5)
+                    elif message.content == 'space' or message.content == 'Space' and message.author != user and message.author != prevuser:
+                        answer = answer.replace('{}', '␣{}')
+                        embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
+                        try:
+                            await message.add_reaction('✅')
+                        except:
+                            pass
+                        await msg.edit(embed=embed)
+                        embed.clear_fields()
+                        prevuser = message.author
+                        setprevuser(message.guild.id,prevuser)
+                        setanswer(message.guild.id,answer)
+                        await asyncio.sleep(0.5)
+                    elif message.content == 'goodbye' or message.content == 'Goodbye' and message.author != user and message.author != prevuser:
+                        on[message.guild.id] = 0
+                        setprevuser(message.guild.id,'')
+                        if answer == '':
+                            answer = ' '
+                        answer=answer.replace("␣"," ")
+                        embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
+                        embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                        embed.add_field(name='The answer is', value='"{}"'.format(answer).replace('{}', ''), inline=False)
+                        msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
+                        pinme = await message.channel.send(embed=embed)
+                        await msg.unpin()
+                        await asyncio.sleep(0.5)
+                        await msg1.delete()
+                        await pinme.pin()
+                        answer = ''
+                        logging.info('OFF in {}'.format(message.guild.name))
+                    elif message.content == 'stopouija' and message.author == owner:
+                        on[message.guild.id] = 0
+                        logging.info('{} used stopouija to stop the question going on in {}'.format(str(owner),message.guild.name))
                     else:
                         await bot.process_commands(message)
                         try:
@@ -180,6 +156,8 @@ async def on_message(message):
                         await message.delete()
                     except:
                         pass
+            elif message.content == "<@{}>".format(bot.user.id):
+                await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
             else:
                 if not message.author.bot:
                     if message.content.startswith("if you are real say "):
@@ -190,14 +168,14 @@ async def on_message(message):
             send=message.content.replace("if you are real say ","")
             await message.channel.send("{}, lol".format(send))
         elif message.content == "<@{}>".format(bot.user.id):
-            await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`".format(prefixes.get(str(message.guild.id),default_prefix)))
+            await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
         else:
             await bot.process_commands(message)
     elif not message.author.bot and message.content.startswith("if you are real say "):
         send=message.content.replace("if you are real say ","")
         await message.channel.send("{}, lol".format(send))
     elif message.content == "<@{}>".format(bot.user.id):
-        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`".format(prefixes.get(str(message.guild.id),default_prefix)))
+        await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
     else:
         await bot.process_commands(message)
 
@@ -265,7 +243,7 @@ async def exit(ctx):
 async def setprefix(ctx,prefixToBeSet="o!"):
     'Sets the command prefix for this server, only usable by a user that has the Manage Server permissions, if the prefix you want contains space put it in "quotes". Defaults to `o!` if no prefix is specified'
     if ctx.author.guild_permissions.manage_guild or ctx.author == ctx.guild.owner:
-        prefixes[str(ctx.guild.id)] = prefixToBeSet
+        prefixes[ctx.guild.id] = prefixToBeSet
         await ctx.send("Prefix for {} set to `{}`".format(ctx.guild.name,prefixToBeSet))
         with open("prefixes.json","w") as f:
             f.write(str(json.dumps(prefixes)))
