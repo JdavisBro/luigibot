@@ -156,7 +156,7 @@ async def on_message(message):
                         await message.delete()
                     except:
                         pass
-            elif message.content == "<@{}>".format(bot.user.id):
+            elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
                 await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
             else:
                 if not message.author.bot:
@@ -167,14 +167,14 @@ async def on_message(message):
         elif not message.author.bot and message.content.startswith("if you are real say "):
             send=message.content.replace("if you are real say ","")
             await message.channel.send("{}, lol".format(send))
-        elif message.content == "<@{}>".format(bot.user.id):
+        elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
             await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
         else:
             await bot.process_commands(message)
     elif not message.author.bot and message.content.startswith("if you are real say "):
         send=message.content.replace("if you are real say ","")
         await message.channel.send("{}, lol".format(send))
-    elif message.content == "<@{}>".format(bot.user.id):
+    elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
         await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
     else:
         await bot.process_commands(message)
