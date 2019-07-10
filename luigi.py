@@ -3,12 +3,10 @@ from discord.ext import commands
 import asyncio
 import random
 import time, datetime
-from discord.ext.commands import CommandNotFound
 import sys
 import logging
 import json
-# Text analysis for mood command
-from textblob import TextBlob
+from textblob import TextBlob # Mood Command
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -17,7 +15,7 @@ try:
     open("prefixes.json","w").write("{}")
     logging.info("prefixes.json created, used to store per server prefixes.")
 except:
-    logging.info("prefixes.json already exists, unable to create it.")
+    logging.info("prefixes.json already exists or was unable to be created.")
 
 with open("prefixes.json","r") as f:
     prefixes = json.load(f)
@@ -25,10 +23,7 @@ with open("prefixes.json","r") as f:
 default_prefix = "o!"
 
 def prefix(bot, message):
-    if type(message.channel) is not discord.DMChannel:
-        return prefixes.get(message.guild.id, default_prefix)
-    else:
-        return default_prefix
+    return str(prefixes.get(str(message.guild.id), default_prefix))
 
 bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
 TOKEN = sys.argv[1]
@@ -45,16 +40,17 @@ bot.origauthor = {}
 
 @bot.event
 async def on_ready():
-    logging.info('Connected to DISCORD as {}'.format(str(bot.user)))
+    logging.info('----------------------------'+'-'*(len(str(bot.user))+len(str(bot.user.id))))
     game = discord.Game(name='with my LuigiBoard. o!help')
     await bot.change_presence(status=discord.Status.online, activity=game)
     global appinfo, owner
     appinfo = await bot.application_info()
     owner = appinfo.owner
+    logging.info('Connected to DISCORD as {} -- {}'.format(str(bot.user),bot.user.id))
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, CommandNotFound):
+    if isinstance(error, commands.CommandNotFound):
         channel = ctx.channel
         if channel.name in channel_names:
             await ctx.send("Command not found, if you are trying to ask a question use o!ask")
@@ -194,14 +190,14 @@ async def on_message(message):
             send=message.content.replace("if you are real say ","")
             await message.channel.send("{}, lol".format(send))
         elif message.content == "<@{}>".format(bot.user.id):
-            await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {0}".format(prefix(bot,message)))
+            await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`".format(prefixes.get(str(message.guild.id),default_prefix)))
         else:
             await bot.process_commands(message)
     elif not message.author.bot and message.content.startswith("if you are real say "):
         send=message.content.replace("if you are real say ","")
         await message.channel.send("{}, lol".format(send))
     elif message.content == "<@{}>".format(bot.user.id):
-        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {0}".format(prefix(bot,message)))
+        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`".format(prefixes.get(str(message.guild.id),default_prefix)))
     else:
         await bot.process_commands(message)
 
