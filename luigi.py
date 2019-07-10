@@ -24,7 +24,7 @@ with open("prefixes.json","r") as f:
 
 default_prefix = "o!"
 
-async def prefix(bot, message):
+def prefix(bot, message):
     if type(message.channel) is not discord.DMChannel:
         return prefixes.get(message.guild.id, default_prefix)
     else:
@@ -194,16 +194,14 @@ async def on_message(message):
             send=message.content.replace("if you are real say ","")
             await message.channel.send("{}, lol".format(send))
         elif message.content == "<@{}>".format(bot.user.id):
-            serverprefix = await prefix(bot,message)
-            await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `PREFIXask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {}".format(serverprefix))
+            await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {0}".format(prefix(bot,message)))
         else:
             await bot.process_commands(message)
     elif not message.author.bot and message.content.startswith("if you are real say "):
         send=message.content.replace("if you are real say ","")
         await message.channel.send("{}, lol".format(send))
     elif message.content == "<@{}>".format(bot.user.id):
-        serverprefix = await prefix(bot,message)
-        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `PREFIXask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {}".format(serverprefix))
+        await message.channel.send("Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme https://www.github.com/jdavisbro/luigibot permissions that I require or that are optional are also stated on that page. \n After that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTIONGOESHERE` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is {0}".format(prefix(bot,message)))
     else:
         await bot.process_commands(message)
 
@@ -410,7 +408,7 @@ async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None)
         channel = ctx.channel
     async with ctx.channel.typing():
         counter = 0             # Getting user's last 15 messages
-        serverprefix = await prefix(bot,ctx.message)
+        serverprefix = prefix(bot,ctx.message)
         user_messages = []
         async for message in channel.history(limit=200):
             if (not message.content.startswith(serverprefix)) and message.author == user:  # making sure not to analyze "o!mood" message as well as only adding messages from user
