@@ -23,7 +23,7 @@ with open("prefixes.json","r") as f:
 default_prefix = "o!"
 
 def prefix(bot, message):
-    return str(prefixes.get(message.guild.id, default_prefix)) if message != None else default_prefix
+    return str(prefixes.get(message.guild.id, default_prefix)) if message.guild != None else default_prefix
 
 bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
 TOKEN = sys.argv[1]
