@@ -1,11 +1,7 @@
-import discord
+import discord, logging, asyncio
 from discord.ext import commands
-import asyncio
-import random
-import time, datetime
-import sys
-import logging
-import json
+import random, time, datetime
+import json, sys
 from textblob import TextBlob # Mood Command
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
@@ -26,7 +22,11 @@ def prefix(bot, message):
     return str(prefixes.get(message.guild.id, default_prefix))
 
 bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
-TOKEN = sys.argv[1]
+try:
+    TOKEN = sys.argv[1]
+except:
+    logging.warning("Unable to get token, you must put it as the first argument after the file name, e.g python luigi.py 'TOKEN' or you can edit the code directly.")
+    exit()
 channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
 bot.startTime = time.time()
 update=0
@@ -37,7 +37,7 @@ bot.msg = {}
 bot.messageembed = {}
 bot.prevuser = {}
 bot.origauthor = {}
-help_message = "Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme <https://www.github.com/jdavisbro/luigibot> permissions that I require or that are optional are also stated on that page. \nAfter that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`"
+bot.help_message = "Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme <https://www.github.com/jdavisbro/luigibot> permissions that I require or that are optional are also stated on that page. \nAfter that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`"
 
 @bot.event
 async def on_ready():
@@ -157,7 +157,7 @@ async def on_message(message):
                     except:
                         pass
             elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
-                await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
+                await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
             else:
                 if not message.author.bot:
                     if message.content.startswith("if you are real say "):
@@ -168,14 +168,14 @@ async def on_message(message):
             send=message.content.replace("if you are real say ","")
             await message.channel.send("{}, lol".format(send))
         elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
-            await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
+            await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
         else:
             await bot.process_commands(message)
     elif not message.author.bot and message.content.startswith("if you are real say "):
         send=message.content.replace("if you are real say ","")
         await message.channel.send("{}, lol".format(send))
     elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
-        await message.channel.send(help_message.format(prefixes.get(message.guild.id,default_prefix)))
+        await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
     else:
         await bot.process_commands(message)
 
