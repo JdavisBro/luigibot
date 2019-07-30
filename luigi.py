@@ -19,7 +19,7 @@ with open("prefixes.json","r") as f:
 default_prefix = "o!"
 
 def prefix(bot, message):
-    return str(prefixes.get(message.guild.id, default_prefix))
+    return str(prefixes.get(message.guild.id, default_prefix)) if message.guild != None else default_prefix
 
 bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
 try:
@@ -98,7 +98,7 @@ async def on_message(message):
                 user = bot.origauthor[message.guild.id]
                 length = len(message.content)
                 if not message.author.bot:
-                    if length == 1 and message.author != user and message.author != prevuser and message.content != '{':
+                    if length == 1 and message.author.id != user.id and message.author.id != prevuser.id and message.content != '{':
                         answer = answer.replace('{}', message.content + '{}')
                         embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
                         try:
@@ -111,7 +111,7 @@ async def on_message(message):
                         setprevuser(message.guild.id,prevuser)
                         setanswer(message.guild.id,answer)
                         await asyncio.sleep(0.5)
-                    elif message.content == 'space' or message.content == 'Space' and message.author != user and message.author != prevuser:
+                    elif message.content == 'space' or message.content == 'Space' and message.author.id != user.id and message.author.id != prevuser.id:
                         answer = answer.replace('{}', '␣{}')
                         embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
                         try:
@@ -124,7 +124,7 @@ async def on_message(message):
                         setprevuser(message.guild.id,prevuser)
                         setanswer(message.guild.id,answer)
                         await asyncio.sleep(0.5)
-                    elif message.content == 'goodbye' or message.content == 'Goodbye' and message.author != user and message.author != prevuser:
+                    elif message.content == 'goodbye' or message.content == 'Goodbye' and message.author.id != user.id and message.author.id != prevuser.id:
                         on[message.guild.id] = 0
                         setprevuser(message.guild.id,'')
                         if answer == '':
