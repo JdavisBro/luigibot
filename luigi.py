@@ -111,7 +111,7 @@ async def on_message(message):
                         setprevuser(message.guild.id,prevuser)
                         setanswer(message.guild.id,answer)
                         await asyncio.sleep(0.5)
-                    elif message.content == 'space' or message.content == 'Space' and message.author.id != user.id and message.author.id != prevuser.id:
+                    elif message.content == 'space' or message.content == 'Space' and message.author != user and message.author != prevuser:
                         answer = answer.replace('{}', '␣{}')
                         embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
                         try:
