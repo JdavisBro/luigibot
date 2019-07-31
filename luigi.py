@@ -124,7 +124,7 @@ async def on_message(message):
                         setprevuser(message.guild.id,prevuser)
                         setanswer(message.guild.id,answer)
                         await asyncio.sleep(0.5)
-                    elif message.content == 'goodbye' or message.content == 'Goodbye' and message.author != user and message.author != prevuser:
+                    elif (message.content == 'goodbye' or message.content == 'Goodbye') and message.author != user and message.author != prevuser:
                         on[message.guild.id] = 0
                         setprevuser(message.guild.id,'')
                         if answer == '':
