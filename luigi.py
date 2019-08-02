@@ -3,6 +3,8 @@ from discord.ext import commands
 import random, time, datetime
 import json, sys
 from textblob import TextBlob # Mood Command
+import pytz
+from pytz import timezone
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -12,6 +14,13 @@ try:
     logging.info("prefixes.json created, used to store per server prefixes.")
 except:
     logging.info("prefixes.json already exists or was unable to be created.")
+
+try:
+    open("timezones.json","x")
+    open("timezones.json","w").write("{}")
+    logging.info("timezones.json created, used to store timezones.")
+except:
+    logging.info("timezones.json already exists or was unable to be created.")
 
 with open("prefixes.json","r") as f:
     prefixes = json.load(f)
@@ -399,5 +408,84 @@ async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None)
             sentiments.append((opinion.polarity + 1) / 2) # Adding message's sentiment to sentiment array (opinion.sentiment.polarity is -1.0 - 1.0, so it is normalized)
         overall_sentiment = sum(sentiments) / len(sentiments) # Averaging out sentiments
     await ctx.send("{} is {}% happy!".format(user.display_name, int(overall_sentiment * 100))) # overall_sentiment is converted to an percentage without a fractional
+    
+@bot.group(name="timezone",aliases=["tz"])
+async def tz(ctx):
+    if ctx.invoked_subcommand is None:
+        await ctx.send_help(ctx.command)
+
+@tz.command(name="add")
+async def tz_add(ctx,timezonee: str):
+    f = open("timezones.json","r")
+    timezones = json.loads(f.read())
+    try:
+        timezones[str(ctx.guild.id)]
+    except KeyError:
+        timezones[str(ctx.guild.id)] = []
+    timezonee = timezonee.upper()
+    if timezonee in timezones[str(ctx.guild.id)]:
+        await ctx.send("That timezone is already in the list.")
+        return
+    if timezonee not in list(pytz.all_timezones):
+        await ctx.send("That is not a timezone")
+        return
+    await ctx.send(f"Timezone {timezonee} added to the list.")
+    timezones[str(ctx.guild.id)].append(timezonee)
+    open("timezones.json","w").write(json.dumps(timezones))
+
+@tz.command(name="del",aliases=["remove","delete"])
+async def tz_del(ctx,timezonee: str):
+    f = open("timezones.json","r")
+    timezones = json.loads(f.read())
+    try:
+        timezones[str(ctx.guild.id)]
+    except KeyError:
+        timezones[str(ctx.guild.id)] = []
+    timezonee = timezonee.upper()
+    if timezonee not in timezones[str(ctx.guild.id)]:
+        await ctx.send("That timezone isn't in the list.")
+        return
+    await ctx.send(f"Timezone {timezonee} removed from the list.")
+    timezonee[str(ctx.guild.id)].pop(timezonee)
+    open("timezones.json","w").write(json.dumps(timezones))
+
+@tz.command(name="list")
+async def tz_list(ctx):
+    f = open("timezones.json","r")
+    timezones = json.loads(f.read())
+    try:
+        timezones[str(ctx.guild.id)]
+    except KeyError:
+        timezones[str(ctx.guild.id)] = []
+    if not timezones[str(ctx.guild.id)]:
+        await ctx.send("There are no timezones for this server.")
+        return
+    message = "Here's the list of timezones for this server:\n"
+    for timezoneee in timezones[str(ctx.guild.id)]:
+        message += f"{timezoneee}\n"
+    await ctx.send(message)
+
+@tz.command(name="convert")
+async def tz_convert(ctx,time:str,timezonee:str):
+    timezonee = timezonee.upper()
+    if timezonee not in list(pytz.all_timezones):
+        await ctx.send("That is not a timezone")
+        return
+    time = datetime.datetime.strptime(time, '%H:%M').time()
+    timezonee = timezone(timezonee)
+    time = time.replace(tzinfo=timezonee)
+    f = open("timezones.json","r")
+    timezones = json.loads(f.read())
+    try:
+        timezones[str(ctx.guild.id)]
+    except KeyError:
+        timezones[str(ctx.guild.id)] = []
+    if not timezones[str(ctx.guild.id)]:
+        await ctx.send("There are no timezones in this server.")
+        return
+    message = "Here's that time in the timezones added to this server.\n"
+    for timezoneee in timezones[str(ctx.guild.id)]:
+        message += f"{timezoneee}: {time.astimezone(timezone(timezoneee))}\n"
+    await ctx.send(message)
     
 bot.run(TOKEN)
