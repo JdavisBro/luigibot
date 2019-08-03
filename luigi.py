@@ -416,13 +416,13 @@ async def tz(ctx):
 
 @tz.command(name="add")
 async def tz_add(ctx,timezonee: str):
+    """Adds a timezone to the server list."""
     f = open("timezones.json","r")
     timezones = json.loads(f.read())
     try:
         timezones[str(ctx.guild.id)]
     except KeyError:
         timezones[str(ctx.guild.id)] = []
-    timezonee = timezonee.upper()
     if timezonee in timezones[str(ctx.guild.id)]:
         await ctx.send("That timezone is already in the list.")
         return
@@ -435,13 +435,13 @@ async def tz_add(ctx,timezonee: str):
 
 @tz.command(name="del",aliases=["remove","delete"])
 async def tz_del(ctx,timezonee: str):
+    """Removes timezones from the server list"""
     f = open("timezones.json","r")
     timezones = json.loads(f.read())
     try:
         timezones[str(ctx.guild.id)]
     except KeyError:
         timezones[str(ctx.guild.id)] = []
-    timezonee = timezonee.upper()
     if timezonee not in timezones[str(ctx.guild.id)]:
         await ctx.send("That timezone isn't in the list.")
         return
@@ -451,6 +451,7 @@ async def tz_del(ctx,timezonee: str):
 
 @tz.command(name="list")
 async def tz_list(ctx):
+    """Lists the timezones added to the server using tz add"""
     f = open("timezones.json","r")
     timezones = json.loads(f.read())
     try:
@@ -466,14 +467,15 @@ async def tz_list(ctx):
     await ctx.send(message)
 
 @tz.command(name="convert")
-async def tz_convert(ctx,time:str,timezonee:str):
-    timezonee = timezonee.upper()
+async def tz_convert(ctx,hour:int,minutes:int,timezonee:str):
+    """Converts the given HOUR and MINUTE from TIMEZONEE to
+    the timezones added to the server using tz add"""
     if timezonee not in list(pytz.all_timezones):
         await ctx.send("That is not a timezone")
         return
-    time = datetime.datetime.strptime(time, '%H:%M').time()
+    time = datetime.datetime.now()
     timezonee = timezone(timezonee)
-    time = time.replace(tzinfo=timezonee)
+    time = time.replace(tzinfo=timezonee,hour=hour,minute=minutes,second=0,microsecond=0)
     f = open("timezones.json","r")
     timezones = json.loads(f.read())
     try:
@@ -485,7 +487,12 @@ async def tz_convert(ctx,time:str,timezonee:str):
         return
     message = "Here's that time in the timezones added to this server.\n"
     for timezoneee in timezones[str(ctx.guild.id)]:
-        message += f"{timezoneee}: {time.astimezone(timezone(timezoneee))}\n"
+        timeinthistimezone = time.astimezone(timezone(timezoneee))
+        if int(timeinthistimezone.strftime("%H")) > 12:
+            timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} (12 Hour {int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')})"
+        else:
+            timeinthistimezone = timeinthistimezone.strftime('%H:%M')
+        message += f"{timezoneee}: {timeinthistimezone}\n"
     await ctx.send(message)
     
 bot.run(TOKEN)
