@@ -1,7 +1,6 @@
 import discord, logging, asyncio
 from discord.ext import commands
-import random, time, datetime
-import json, sys
+import random, time, datetime, json, sys
 from textblob import TextBlob # Mood Command
 import pytz # Timezone command
 from pytz import timezone # Timezone command
@@ -459,7 +458,7 @@ async def tz_del(ctx,timezonee: str):
         await ctx.send("That timezone isn't in the list.")
         return
     await ctx.send(f"Timezone {timezonee} removed from the list.")
-    timezones[str(ctx.guild.id)].pop(timezonee)
+    timezones[str(ctx.guild.id)].remove(timezonee)
     open("timezones.json","w").write(json.dumps(timezones))
 
 @tz.command(name="list")
