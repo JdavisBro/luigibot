@@ -3,8 +3,9 @@ from discord.ext import commands
 import random, time, datetime
 import json, sys
 from textblob import TextBlob # Mood Command
-import pytz
-from pytz import timezone
+import pytz # Timezone command
+from pytz import timezone # Timezone command
+import requests, shutil # Inspire me command
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -30,7 +31,7 @@ default_prefix = "o!"
 def prefix(bot, message):
     return str(prefixes.get(message.guild.id, default_prefix)) if message.guild != None else default_prefix
 
-bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord!")
+bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord but also does more like\ninspire you (say inspire me)!\nLooks at your mood based on the last 15/200 messages in that channel.\nand can convert timezones.")
 try:
     TOKEN = sys.argv[1]
 except:
@@ -86,6 +87,28 @@ def setprevuser(channelid,prevuser):
 def setuser(channelid,user):
     bot.origauthor[channelid] = user
 
+async def messageChecking(message):
+    if message.author.bot:
+        return
+    if message.content.lower() == "inspire me":
+        await message.channel.trigger_typing()
+        image_url = requests.get('http://inspirobot.me/api?generate=true').text
+        r = requests.get(image_url, stream=True)
+        if r.status_code == 200:
+            with open("image.jpg", 'w+b') as f:
+                r.raw.decode_content = True
+                shutil.copyfileobj(r.raw, f)
+                f.flush()
+        await message.channel.send(file=discord.File(open("image.jpg", "rb"),filename="Inspiration.jpg"))
+        return
+    if message.content.startswith("if you are real say "):
+        send=message.content.replace("if you are real say ","")
+        await message.channel.send("{}, lol".format(send))
+        return
+    if message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
+        await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
+        return
+
 @bot.event
 async def on_message(message):
     global on, owner, channel_names
@@ -133,7 +156,7 @@ async def on_message(message):
                         setprevuser(message.guild.id,prevuser)
                         setanswer(message.guild.id,answer)
                         await asyncio.sleep(0.5)
-                    elif (message.content == 'goodbye' or message.content == 'Goodbye') and message.author != user and message.author != prevuser:
+                    elif message.content.lower() == 'goodbye' and message.author != user and message.author != prevuser:
                         on[message.guild.id] = 0
                         setprevuser(message.guild.id,'')
                         if answer == '':
@@ -154,38 +177,27 @@ async def on_message(message):
                         on[message.guild.id] = 0
                         logging.info('{} used stopouija to stop the question going on in {}'.format(str(owner),message.guild.name))
                     else:
+                        await messageChecking(message)
                         await bot.process_commands(message)
                         try:
                             await message.delete()
                         except:
                             pass
                 else:
+                    await messageChecking(message)
                     await bot.process_commands(message)
                     try:
                         await message.delete()
                     except:
                         pass
-            elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
-                await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
             else:
-                if not message.author.bot:
-                    if message.content.startswith("if you are real say "):
-                        send=message.content.replace("if you are real say ","")
-                        await message.channel.send("{}, lol".format(send))
+                await messageChecking(message)
                 await bot.process_commands(message)
-        elif not message.author.bot and message.content.startswith("if you are real say "):
-            send=message.content.replace("if you are real say ","")
-            await message.channel.send("{}, lol".format(send))
-        elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
-            await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
         else:
+            await messageChecking(message)
             await bot.process_commands(message)
-    elif not message.author.bot and message.content.startswith("if you are real say "):
-        send=message.content.replace("if you are real say ","")
-        await message.channel.send("{}, lol".format(send))
-    elif message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
-        await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
     else:
+        await messageChecking(message)
         await bot.process_commands(message)
 
 @bot.command()
