@@ -423,12 +423,13 @@ async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None)
     
 @bot.group(name="timezone",aliases=["tz"])
 async def tz(ctx):
+    """Converts times. Compatable timezones: https://jdavisbro.github.io/luigi/timezones.txt"""
     if ctx.invoked_subcommand is None:
         await ctx.send_help(ctx.command)
 
 @tz.command(name="add")
 async def tz_add(ctx,timezonee: str):
-    """Adds a timezone to the server list."""
+    """Adds a timezone to the server list. Compatable timezones: https://jdavisbro.github.io/luigi/timezones.txt"""
     f = open("timezones.json","r")
     timezones = json.loads(f.read())
     try:
@@ -458,7 +459,7 @@ async def tz_del(ctx,timezonee: str):
         await ctx.send("That timezone isn't in the list.")
         return
     await ctx.send(f"Timezone {timezonee} removed from the list.")
-    timezonee[str(ctx.guild.id)].pop(timezonee)
+    timezones[str(ctx.guild.id)].pop(timezonee)
     open("timezones.json","w").write(json.dumps(timezones))
 
 @tz.command(name="list")
@@ -481,7 +482,8 @@ async def tz_list(ctx):
 @tz.command(name="convert")
 async def tz_convert(ctx,hour:int,minutes:int,timezonee:str):
     """Converts the given HOUR and MINUTE from TIMEZONEE to
-    the timezones added to the server using tz add"""
+    the timezones added to the server using tz add
+    Compatable timezones: https://jdavisbro.github.io/luigi/timezones.txt"""
     if timezonee not in list(pytz.all_timezones):
         await ctx.send("That is not a timezone")
         return
