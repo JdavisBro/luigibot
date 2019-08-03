@@ -504,7 +504,7 @@ async def tz_convert(ctx,hour:int,minutes:int,timezonee:str):
         if int(timeinthistimezone.strftime("%H")) > 12:
             timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')}pm)"
         else:
-            timeinthistimezone = timeinthistimezone.strftime('%H:%M')
+            timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({timeinthistimezone.strftime('%H:%M')}am)"
         message += f"{timezoneee}: {timeinthistimezone}\n"
     await ctx.send(message)
 
