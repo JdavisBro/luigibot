@@ -37,7 +37,6 @@ except:
     logging.warning("Unable to get token, you must put it as the first argument after the file name, e.g python luigi.py 'TOKEN' or you can edit the code directly.")
     exit()
 channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
-bot.startTime = time.time()
 update=0
 on = {}
 bot.question = {}
@@ -46,7 +45,7 @@ bot.msg = {}
 bot.messageembed = {}
 bot.prevuser = {}
 bot.origauthor = {}
-bot.help_message = "Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme <https://www.github.com/jdavisbro/luigibot> permissions that I require or that are optional are also stated on that page. \nAfter that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThat you for coming to my TED talk. My prefix in this server is `{0}`"
+bot.help_message = "Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme <https://www.github.com/jdavisbro/luigibot> permissions that I require or that are optional are also stated on that page. \nAfter that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThank you for coming to my TED talk. My prefix in this server is `{0}`"
 
 @bot.event
 async def on_ready():
@@ -55,6 +54,7 @@ async def on_ready():
     global appinfo, owner
     appinfo = await bot.application_info()
     owner = appinfo.owner
+    bot.startTime = time.time()
     logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
     logging.info('| Connected to DISCORD as {} -- {} |'.format(str(bot.user),bot.user.id))
     logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
@@ -89,6 +89,8 @@ def setuser(channelid,user):
 async def messageChecking(message):
     if message.author.bot:
         return
+    if channel.name in channel_names and on[message.guild.id] != 0:
+        return
     if message.content.lower() == "inspire me":
         await message.channel.trigger_typing()
         image_url = requests.get('http://inspirobot.me/api?generate=true').text
@@ -100,8 +102,8 @@ async def messageChecking(message):
                 f.flush()
         await message.channel.send(file=discord.File(open("image.jpg", "rb"),filename="Inspiration.jpg"))
         return
-    if message.content.startswith("if you are real say "):
-        send=message.content.replace("if you are real say ","")
+    if message.content.lower().startswith("if you are real say "):
+        send=message.content.lower().replace("if you are real say ","")
         await message.channel.send("{}, lol".format(send))
         return
     if message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
