@@ -501,9 +501,34 @@ async def tz_convert(ctx,hour:int,minutes:int,timezonee:str):
         return
     message = "Here's that time in the timezones added to this server.\n"
     for timezoneee in timezones[str(ctx.guild.id)]:
-        timeinthistimezone = time.astimezone(timezone(timezoneee))
+        timeinthistimezone = timezoneee(time.astimezone(timezone(timezoneee)))
         if int(timeinthistimezone.strftime("%H")) > 12:
-            timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} (12 Hour {int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')})"
+            timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')}pm)"
+        else:
+            timeinthistimezone = timeinthistimezone.strftime('%H:%M')
+        message += f"{timezoneee}: {timeinthistimezone}\n"
+    await ctx.send(message)
+
+@tz.command(name="currenttime",aliases=["current","now"])
+async def tz_current(ctx):
+    """Converts the given HOUR and MINUTE from TIMEZONEE to
+    the timezones added to the server using tz add
+    Compatable timezones: https://jdavisbro.github.io/luigi/timezones.txt"""
+    time = datetime.datetime.utcnow()
+    f = open("timezones.json","r")
+    timezones = json.loads(f.read())
+    try:
+        timezones[str(ctx.guild.id)]
+    except KeyError:
+        timezones[str(ctx.guild.id)] = []
+    if not timezones[str(ctx.guild.id)]:
+        await ctx.send("There are no timezones in this server.")
+        return
+    message = "Here's the current time in the timezones added to this server.\n"
+    for timezoneee in timezones[str(ctx.guild.id)]:
+        timeinthistimezone = pytz.utc.localize(time).astimezone(timezone(timezoneee))
+        if int(timeinthistimezone.strftime("%H")) > 12:
+            timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')}pm)"
         else:
             timeinthistimezone = timeinthistimezone.strftime('%H:%M')
         message += f"{timezoneee}: {timeinthistimezone}\n"
