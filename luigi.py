@@ -500,7 +500,7 @@ async def tz_convert(ctx,hour:int,minutes:int,timezonee:str):
         return
     message = "Here's that time in the timezones added to this server.\n"
     for timezoneee in timezones[str(ctx.guild.id)]:
-        timeinthistimezone = timezoneee(time.astimezone(timezone(timezoneee)))
+        timeinthistimezone = time.astimezone(timezone(timezoneee))
         if int(timeinthistimezone.strftime("%H")) > 12:
             timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')}pm)"
         else:
