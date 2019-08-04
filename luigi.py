@@ -534,5 +534,17 @@ async def tz_current(ctx):
             timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({timeinthistimezone.strftime('%H:%M')}am)"
         embed.add_field(name=timezoneee, value=timeinthistimezone, inline=True)
     await ctx.send(embed=embed)
-    
+
+@bot.command()
+async def mee6xp(ctx,*,user: discord.Member=None):
+    """Gives the user's (you if left empty) exact MEE6 xp"""
+    if user is None:
+        user = ctx.author
+    responce = requests.get(f"https://mee6.xyz/api/plugins/levels/leaderboard/{serverid}")
+    responce = responce.json()
+    responce = responce["players"]
+    for user in responce:
+        if user["username"] == user.name and user["discriminator"] == user.discriminator:
+            await ctx.send(f"Here's {user.display_name}'s exact MEE6 XP: {user['xp']}")
+
 bot.run(TOKEN)
