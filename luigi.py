@@ -89,7 +89,7 @@ def setuser(channelid,user):
 async def messageChecking(message):
     if message.author.bot:
         return
-    if channel.name in channel_names and on[message.guild.id] != 0:
+    if message.channel.name in channel_names and on[message.guild.id] != 0:
         return
     if message.content.lower() == "inspire me":
         await message.channel.trigger_typing()
@@ -500,15 +500,15 @@ async def tz_convert(ctx,hour:int,minutes:int,timezonee:str):
     if not timezones[str(ctx.guild.id)]:
         await ctx.send("There are no timezones in this server.")
         return
-    message = "Here's that time in the timezones added to this server.\n"
+    embed = discord.Embed(title="Heres that time in the timezones added to the server.", colour=discord.Colour.from_rgb(random.randint(1,250),random.randint(1,250),random.randint(1,250)))
     for timezoneee in timezones[str(ctx.guild.id)]:
         timeinthistimezone = time.astimezone(timezone(timezoneee))
         if int(timeinthistimezone.strftime("%H")) > 12:
             timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')}pm)"
         else:
             timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({timeinthistimezone.strftime('%H:%M')}am)"
-        message += f"{timezoneee}: {timeinthistimezone}\n"
-    await ctx.send(message)
+        embed.add_field(name=timezoneee, value=timeinthistimezone, inline=True)
+    await ctx.send(embed=embed)
 
 @tz.command(name="currenttime",aliases=["current","now"])
 async def tz_current(ctx):
@@ -525,14 +525,14 @@ async def tz_current(ctx):
     if not timezones[str(ctx.guild.id)]:
         await ctx.send("There are no timezones in this server.")
         return
-    message = "Here's the current time in the timezones added to this server.\n"
+    embed = discord.Embed(title="Heres the current time in the timezones added to the server.", colour=discord.Colour.from_rgb(random.randint(1,250),random.randint(1,250),random.randint(1,250)))
     for timezoneee in timezones[str(ctx.guild.id)]:
         timeinthistimezone = pytz.utc.localize(time).astimezone(timezone(timezoneee))
         if int(timeinthistimezone.strftime("%H")) > 12:
             timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({int(timeinthistimezone.strftime('%H'))-12}:{timeinthistimezone.strftime('%M')}pm)"
         else:
             timeinthistimezone = f"{timeinthistimezone.strftime('%H:%M')} ({timeinthistimezone.strftime('%H:%M')}am)"
-        message += f"{timezoneee}: {timeinthistimezone}\n"
-    await ctx.send(message)
+        embed.add_field(name=timezoneee, value=timeinthistimezone, inline=True)
+    await ctx.send(embed=embed)
     
 bot.run(TOKEN)
