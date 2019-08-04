@@ -540,7 +540,7 @@ async def mee6xp(ctx,*,user: discord.Member=None):
     """Gives the user's (you if left empty) exact MEE6 xp"""
     if user is None:
         user = ctx.author
-    responce = requests.get(f"https://mee6.xyz/api/plugins/levels/leaderboard/{serverid}")
+    responce = requests.get(f"https://mee6.xyz/api/plugins/levels/leaderboard/{ctx.guild.id}")
     responce = responce.json()
     responce = responce["players"]
     for user in responce:
