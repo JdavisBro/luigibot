@@ -543,8 +543,8 @@ async def mee6xp(ctx,*,user: discord.Member=None):
     responce = requests.get(f"https://mee6.xyz/api/plugins/levels/leaderboard/{ctx.guild.id}")
     responce = responce.json()
     responce = responce["players"]
-    for user in responce:
-        if user["username"] == user.name and user["discriminator"] == user.discriminator:
-            await ctx.send(f"Here's {user.display_name}'s exact MEE6 XP: {user['xp']}")
+    for userdict in responce:
+        if userdict["username"] == user.name and userdict["discriminator"] == user.discriminator:
+            await ctx.send(f"Here's {user.display_name}'s exact MEE6 XP: {userdict['xp']}")
 
 bot.run(TOKEN)
