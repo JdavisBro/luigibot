@@ -1,60 +1,63 @@
-import discord, logging, asyncio
-from discord.ext import commands
-import random, time, datetime, json, sys
+import discord, logging, asyncio # Normal Discord.py stuff
+from discord.ext import commands # Normal Discord.py stuff
+import random, time, datetime, json, sys # Uptime, Prefixes, Token
 from textblob import TextBlob # Mood Command
 import pytz # Timezone command
 from pytz import timezone # Timezone command
 import requests, shutil # Inspire me command
-
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
-try:
+try: # PREFIXES
     open("prefixes.json","x")
     open("prefixes.json","w").write("{}")
     logging.info("prefixes.json created, used to store per server prefixes.")
 except:
     logging.info("prefixes.json already exists or was unable to be created.")
-
-try:
+try: # TIMEZONES
     open("timezones.json","x")
     open("timezones.json","w").write("{}")
     logging.info("timezones.json created, used to store timezones.")
 except:
     logging.info("timezones.json already exists or was unable to be created.")
-
-with open("prefixes.json","r") as f:
-    prefixes = json.load(f)
-
-default_prefix = "o!"
-
-def prefix(bot, message):
-    return str(prefixes.get(message.guild.id, default_prefix)) if message.guild != None else default_prefix
-
-bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord but also does more like\ninspire you (say inspire me)!\nLooks at your mood based on the last 15/200 messages in that channel.\nand can convert timezones.")
-try:
+try: # TOKEN
     TOKEN = sys.argv[1]
 except:
     logging.warning("Unable to get token, you must put it as the first argument after the file name, e.g python luigi.py 'TOKEN' or you can edit the code directly.")
     exit()
-channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
-update=0
+with open("prefixes.json","r") as f:
+    prefixes = json.load(f)
+
+default_prefix = 'o!' # DEFAULT PREFIX
+
+def prefix(bot, message):
+    return str(prefixes.get(str(message.guild.id), default_prefix)) if message.guild != None else default_prefix
+
+bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord but also does more like\ninspire you (say inspire me)!\nLooks at your mood based on the last 15/200 messages in that channel.\nand can convert timezones.")
+bot.channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
+bot.update = 0
 on = {}
+bot.appinfo = ''
 bot.question = {}
 bot.answer = {}
 bot.msg = {}
-bot.messageembed = {}
+bot.embed = {}
 bot.prevuser = {}
 bot.origauthor = {}
 bot.help_message = "Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme <https://www.github.com/jdavisbro/luigibot> permissions that I require or that are optional are also stated on that page. \nAfter that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThank you for coming to my TED talk. My prefix in this server is `{0}`"
 
+def setBot(variable,value,guildid=None):
+    if guildid != None:
+        exec(f"bot.{variable}[{guildid}] = value")
+    else:
+        exec(f"bot.{variable} = value")
+
 @bot.event
 async def on_ready():
-    game = discord.Game(name='with my LuigiBoard. o!help')
+    game = discord.Game(name=f'with my LuigiBoard. @{str(bot.user)}')
     await bot.change_presence(status=discord.Status.online, activity=game)
-    global appinfo, owner
     appinfo = await bot.application_info()
-    owner = appinfo.owner
-    bot.startTime = time.time()
+    setBot("appinfo",appinfo)
+    setBot("startTime",time.time())
     logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
     logging.info('| Connected to DISCORD as {} -- {} |'.format(str(bot.user),bot.user.id))
     logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
@@ -63,33 +66,15 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         channel = ctx.channel
-        if channel.name in channel_names:
-            await ctx.send("Command not found, if you are trying to ask a question use o!ask")
+        server_prefix = ''
+        server_prefix = prefix(bot,ctx)
+        if channel.name in bot.channel_names:
+            await ctx.send(f"Command not found, if you are trying to ask a question use {server_prefix}ask")
         return
     raise error
 
-def setquestion(channelid,question):
-    bot.question[channelid] = question
-
-def setanswer(channelid,answer):
-    bot.answer[channelid] = answer
-
-def setmsg(channelid,msg):
-    bot.msg[channelid] = msg
-
-def setembed(channelid,messageembed):
-    bot.messageembed[channelid] = messageembed
-
-def setprevuser(channelid,prevuser):
-    bot.prevuser[channelid] = prevuser
-
-def setuser(channelid,user):
-    bot.origauthor[channelid] = user
-
-async def messageChecking(message):
+async def messageExtras(message):
     if message.author.bot:
-        return
-    if message.channel.name in channel_names and on[message.guild.id] != 0:
         return
     if message.content.lower() == "inspire me":
         await message.channel.trigger_typing()
@@ -107,110 +92,101 @@ async def messageChecking(message):
         await message.channel.send("{}, lol".format(send))
         return
     if message.content == "<@{}>".format(bot.user.id) or message.content == "<@!{}>".format(bot.user.id):
-        await message.channel.send(bot.help_message.format(prefixes.get(message.guild.id,default_prefix)))
+        server_prefix = prefix(bot,message)
+        await message.channel.send(bot.help_message.format(server_prefix))
         return
+    await bot.process_commands(message)
 
 @bot.event
 async def on_message(message):
-    global on, owner, channel_names
+    didSomething = 0
     if type(message.channel) is not discord.DMChannel:
         if message.guild.id not in on.keys():
             on[message.guild.id] = 0
-        if on[message.guild.id] != 0:
-            if message.channel.name in channel_names:
-                if (message.author == owner or message.author == message.guild.me) and message.content.startswith("##"):
-                    return
-                if on[message.guild.id] == 1:
+        if on[message.guild.id] != 0 and message.channel.name in bot.channel_names:
+            if (message.author == bot.appinfo.owner or message.author == message.guild.me) and message.content.startswith("##"):
+                return
+            if on[message.guild.id] == 1:
+                try:
                     await message.delete()
-                    return
-                question = bot.question[message.guild.id]
-                answer = bot.answer[message.guild.id]
-                msg = bot.msg[message.guild.id]
-                embed = bot.messageembed[message.guild.id]
-                prevuser = bot.prevuser[message.guild.id]
-                user = bot.origauthor[message.guild.id]
-                length = len(message.content)
-                if not message.author.bot:
-                    if length == 1 and message.author != user and message.author != prevuser and message.content != '{':
-                        answer = answer.replace('{}', message.content + '{}')
-                        embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
-                        try:
-                            await message.add_reaction('✅')
-                        except:
-                            pass
-                        await msg.edit(embed=embed)
-                        embed.clear_fields()
-                        prevuser = message.author
-                        setprevuser(message.guild.id,prevuser)
-                        setanswer(message.guild.id,answer)
-                        await asyncio.sleep(0.5)
-                    elif message.content == 'space' or message.content == 'Space' and message.author != user and message.author != prevuser:
-                        answer = answer.replace('{}', '␣{}')
-                        embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
-                        try:
-                            await message.add_reaction('✅')
-                        except:
-                            pass
-                        await msg.edit(embed=embed)
-                        embed.clear_fields()
-                        prevuser = message.author
-                        setprevuser(message.guild.id,prevuser)
-                        setanswer(message.guild.id,answer)
-                        await asyncio.sleep(0.5)
-                    elif message.content.lower() == 'goodbye' and message.author != user and message.author != prevuser:
-                        on[message.guild.id] = 0
-                        setprevuser(message.guild.id,'')
-                        if answer == '':
-                            answer = ' '
-                        answer=answer.replace("␣"," ")
-                        embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
-                        embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
-                        embed.add_field(name='The answer is', value='"{}"'.format(answer).replace('{}', ''), inline=False)
-                        msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
-                        pinme = await message.channel.send(embed=embed)
-                        await msg.unpin()
-                        await asyncio.sleep(0.5)
-                        await msg1.delete()
-                        await pinme.pin()
-                        answer = ''
-                        logging.info('OFF in {}'.format(message.guild.name))
-                    elif message.content == 'stopouija' and message.author == owner:
-                        on[message.guild.id] = 0
-                        logging.info('{} used stopouija to stop the question going on in {}'.format(str(owner),message.guild.name))
-                    else:
-                        await messageChecking(message)
-                        await bot.process_commands(message)
-                        try:
-                            await message.delete()
-                        except:
-                            pass
-                else:
-                    await messageChecking(message)
-                    await bot.process_commands(message)
+                except:
+                    pass
+                return
+            on[message.guild.id] == 1
+            didSomething = 1
+            question = bot.question[message.guild.id]
+            answer = bot.answer[message.guild.id]
+            msg = bot.msg[message.guild.id]
+            embed = bot.embed[message.guild.id]
+            prevuser = bot.prevuser[message.guild.id]
+            user = bot.origauthor[message.guild.id]
+            length = len(message.content)
+            if message.author.bot:
+                if length == 1 and message.author != user and message.author != prevuser and message.content != '{':
+                    answer = answer.replace('{}', message.content + '{}')
+                    embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
                     try:
-                        await message.delete()
+                        await message.add_reaction('✅')
                     except:
                         pass
+                    await msg.edit(embed=embed)
+                    embed.clear_fields()
+                    setBot("prevuser",message.author,message.guild.id)
+                    setBot("answer",answer,message.guild.id)
+                    didSomething = 2
+                elif message.content.lower() == 'space' and message.author != user and message.author != prevuser:
+                    answer = answer.replace('{}', '␣{}')
+                    embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', '')), inline=False)
+                    try:
+                        await message.add_reaction('✅')
+                    except:
+                        pass
+                    await msg.edit(embed=embed)
+                    embed.clear_fields()
+                    prevuser = message.author
+                    setBot("prevuser",message.author,message.guild.id)
+                    setBot("answer",answer,message.guild.id)
+                    didSomething = 2
+                elif message.content.lower() == 'goodbye' and message.author != user and message.author != prevuser:
+                    on[message.guild.id] = 0
+                    setBot("prevuser",'',message.guild.id)
+                    if answer == '':
+                        answer = ' '
+                    answer=answer.replace("␣"," ")
+                    embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
+                    embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                    embed.add_field(name='The answer is', value='"{}"'.format(answer).replace('{}', ''), inline=False)
+                    msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
+                    pinme = await message.channel.send(embed=embed)
+                    await msg.unpin()
+                    await asyncio.sleep(0.5)
+                    await msg1.delete()
+                    await pinme.pin()
+                    answer = ''
+                    logging.info('OFF in {}'.format(message.guild.name))
+                    didSomething = 2
+                elif message.content == 'stopouija' and message.author == bot.appinfo.owner:
+                    on[message.guild.id] = 0
+                    logging.info('{} used stopouija to stop the question going on in {}'.format(str(bot.appinfo.owner),message.guild.name))
+                    didSomething = 2
             else:
-                await messageChecking(message)
-                await bot.process_commands(message)
-        else:
-            await messageChecking(message)
-            await bot.process_commands(message)
+                await message.delete()
+    if didSomething == 0:
+        await messageExtras(message)
     else:
-        await messageChecking(message)
-        await bot.process_commands(message)
+        if didSomething == 1:
+            await message.delete()
+        on[message.guild.id] = (message.channel.id if on[message.guild.id] != 0 else 0)
 
 @bot.command()
 async def ask(ctx,*,question):
     "Asks a question! Can only be used in a channel named 'ask-ouija'"
-    global update
-    if update == 0:
+    if bot.update == 0:
         if ctx.guild.id not in on.keys():
             on[ctx.guild.id] = 0
         if on[ctx.guild.id] == 0:
             user = ctx.author
-            if ctx.channel.name in channel_names:
+            if ctx.channel.name in bot.channel_names:
                 on[ctx.guild.id] = 1
                 logging.info("ON in {}".format(ctx.guild.name))
                 answer = ''
@@ -218,10 +194,10 @@ async def ask(ctx,*,question):
                     answer = question
                 else:
                     answer = '{}'
-                setuser(ctx.guild.id,user)
-                setquestion(ctx.guild.id,question)
-                setanswer(ctx.guild.id,answer)
-                setprevuser(ctx.guild.id,"")
+                setBot('origauthor',user,ctx.guild.id)
+                setBot('question',question,ctx.guild.id)
+                setBot('answer',answer,ctx.guild.id)
+                setBot('prevuser','',ctx.guild.id)
                 embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description='"{}"'.format(question), color=6363163)
                 embed.set_author(name='Ouija Question!', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
                 embed.add_field(name='The current answer is:', value='"{}"'.format(answer.replace('{}', ' ')), inline=False)
@@ -239,11 +215,9 @@ async def ask(ctx,*,question):
                     pass
                 await asyncio.sleep(0.5)
                 embed.clear_fields()
-                setmsg(ctx.guild.id,msg)
-                setembed(ctx.guild.id,embed)
+                setBot('msg',msg,ctx.guild.id)
+                setBot('embed',embed,ctx.guild.id)
                 on[ctx.guild.id] = ctx.channel.id
-            else:
-                await asyncio.sleep(0.5)
         else:
             await asyncio.sleep(0.5)
             try:
@@ -262,14 +236,14 @@ async def exit(ctx):
     await bot.close()
 
 @bot.command()
+@commands.has_permissions(manage_guild=True)
 async def setprefix(ctx,prefixToBeSet="o!"):
-    'Sets the command prefix for this server, only usable by a user that has the Manage Server permissions, if the prefix you want contains space put it in "quotes". Defaults to `o!` if no prefix is specified'
-    if ctx.author.guild_permissions.manage_guild or ctx.author == ctx.guild.owner:
-        prefixes[ctx.guild.id] = prefixToBeSet
-        await ctx.send("Prefix for {} set to `{}`".format(ctx.guild.name,prefixToBeSet))
-        with open("prefixes.json","w") as f:
-            f.write(str(json.dumps(prefixes)))
-            f.flush()
+    'Sets the command prefix for this server, only usable by a user that has the Manage Server permissions\nIf the prefix you want contains space put it in "quotes". Defaults to `o!` if no prefix is specified'
+    prefixes[str(ctx.guild.id)] = prefixToBeSet
+    await ctx.send("Prefix for {} set to `{}`".format(ctx.guild.name,prefixToBeSet))
+    with open("prefixes.json","w") as f:
+        f.write(str(json.dumps(prefixes)))
+        f.flush()
 
 @bot.command()
 async def uptime(ctx):
@@ -342,8 +316,7 @@ async def say_channel(ctx,channel: discord.TextChannel,*,say):
 async def updatesoon(ctx):
     'Stops new Questions from being asks and shuts down ongoing ouijas after 5 minutes, only usable by the owner'
     ouijasactive = 0
-    global on, update
-    update = 1
+    setBot('update',1)
     for channelid in on.values():
         if channelid != 0:
             ouijasactive += 1
@@ -366,10 +339,9 @@ async def updatesoon(ctx):
             question = bot.question[channel.guild.id]
             answer = bot.answer[channel.guild.id]
             msg = bot.msg[channel.guild.id]
-            embed = bot.messageembed[channel.guild.id]
+            embed = bot.embed[channel.guild.id]
             user = bot.origauthor[channel.guild.id]
             on[channel.guild.id] = 0
-            setprevuser(channel.guild.id,'')
             if answer == '':
                 answer = ' '
             embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was "{}"'.format(question), color=2151680)
@@ -377,11 +349,16 @@ async def updatesoon(ctx):
             embed.add_field(name='The answer is', value='"{}"'.format(answer).replace('{}', ''), inline=False)
             msg1 = await channel.send("We have the answer to {}'s question!".format(user.mention))
             pinme = await channel.send(embed=embed)
-            await msg.unpin()
+            try:
+                await msg.unpin()
+            except:
+                pass
             await asyncio.sleep(0.5)
             await msg1.delete()
-            await pinme.pin()
-            answer = ''
+            try:
+                await pinme.pin()
+            except:
+                pass
             logging.info('FORCED OFF in {}'.format(channel.guild.name))
     await ctx.send("{}! Ouija instances shut down!".format(ctx.author.mention))
 
@@ -394,6 +371,20 @@ async def servers(ctx):
     for guild in bot.guilds:
         guilds += guild.name + '\n'
     await ctx.send(guilds)
+
+@bot.command(aliases=['cP','removePins'])
+@commands.has_permissions(manage_messages=True)
+async def clearPins(ctx,channel=None):
+    async with ctx.channel.typing():
+        if not channel:
+            channel = ctx.channel
+        pins = await channel.pins()
+        if not pins:
+            await ctx.send("There are no pins in this channel")
+            return
+        for pin in pins:
+            await pin.unpin()
+        await ctx.send("Done! ⛔📌")
 
 @bot.command()
 async def mood(ctx,user: discord.Member=None, channel: discord.TextChannel=None):
