@@ -5,7 +5,9 @@ from textblob import TextBlob # Mood Command
 import pytz # Timezone command
 from pytz import timezone # Timezone command
 import requests, shutil # Inspire me command
+
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
+
 try: # PREFIXES
     open("prefixes.json","x")
     open("prefixes.json","w").write("{}")
@@ -81,6 +83,22 @@ async def on_command_error(ctx, error):
     else:
         raise error
 
+async def addResponce(message):
+    question = bot.question[message.guild.id]
+    answer = bot.answer[message.guild.id]
+    msg = bot.msg[message.guild.id]
+    embed = bot.embed[message.guild.id]
+    answer = answer.replace('{}', message.content + '{}')
+    embed.add_field(name="The current answer is", value="'{}'".format(answer.replace("{}","")))
+    try:
+        await message.add_reaction('✅')
+    except:
+        pass
+    await msg.edit(embed=embed)
+    embed.clear_fields()
+    setBot("prevuser",message.author,message.guild.id)
+    setBot("answer",answer,message.guild.id)
+
 async def messageExtras(message):
     if message.author.bot:
         return
@@ -122,53 +140,24 @@ async def on_message(message):
                 return
             on[message.guild.id] == 1
             didSomething = 1
-            question = bot.question[message.guild.id]
-            answer = bot.answer[message.guild.id]
-            msg = bot.msg[message.guild.id]
-            embed = bot.embed[message.guild.id]
             prevuser = bot.prevuser[message.guild.id]
             user = bot.origauthor[message.guild.id]
             length = len(message.content)
             if not message.author.bot:
                 if length == 1 and message.author != user and message.author != prevuser and message.content != '{':
-                    answer = answer.replace('{}', message.content + '{}')
-                    embed.add_field(name="The current answer is", value="'{}'".format(answer.replace("{}","")))
-                    try:
-                        await message.add_reaction('✅')
-                    except:
-                        pass
-                    await msg.edit(embed=embed)
-                    embed.clear_fields()
-                    setBot("prevuser",message.author,message.guild.id)
-                    setBot("answer",answer,message.guild.id)
+                    await addResponce(message)
                     didSomething = 2
                 elif message.content.lower() == 'space' and message.author != user and message.author != prevuser:
-                    answer = answer.replace('{}', '␣{}')
-                    embed.add_field(name="The current answer is", value="'{}'".format(answer.replace("{}","")))
-                    try:
-                        await message.add_reaction('✅')
-                    except:
-                        pass
-                    await msg.edit(embed=embed)
-                    embed.clear_fields()
-                    prevuser = message.author
-                    setBot("prevuser",message.author,message.guild.id)
-                    setBot("answer",answer,message.guild.id)
+                    await addResponce(message)
                     didSomething = 2
                 elif (message.content == f"<:{message.content.replace('<:','').replace('>','')}>" or message.content == f"<a:{message.content.replace('<a:','').replace('>','')}>") and message.author != user and message.author != prevuser:
-                    answer = answer.replace('{}', message.content + '{}')
-                    embed.add_field(name="The current answer is", value="'{}'".format(answer.replace("{}","")))
-                    try:
-                        await message.add_reaction('✅')
-                    except:
-                        pass
-                    await msg.edit(embed=embed)
-                    embed.clear_fields()
-                    prevuser = message.author
-                    setBot("prevuser",message.author,message.guild.id)
-                    setBot("answer",answer,message.guild.id)
+                    await addResponce(message)
                     didSomething = 2
                 elif message.content.lower() == 'goodbye' and message.author != user and message.author != prevuser:
+                    question = bot.question[message.guild.id]
+                    answer = bot.answer[message.guild.id]
+                    msg = bot.msg[message.guild.id]
+                    embed = bot.embed[message.guild.id]
                     on[message.guild.id] = 0
                     setBot("prevuser",'',message.guild.id)
                     if answer == '':
@@ -190,8 +179,6 @@ async def on_message(message):
                     on[message.guild.id] = 0
                     logging.info('{} used stopouija to stop the question going on in {}'.format(str(bot.appinfo.owner),message.guild.name))
                     didSomething = 2
-            else:
-                await message.delete()
     if didSomething == 0:
         await messageExtras(message)
     else:
@@ -385,7 +372,6 @@ async def updatesoon(ctx):
 
 @bot.command()
 @commands.is_owner()
-@commands.dm_only()
 async def servers(ctx):
     'Lists the servers the bot is in, only usable by the owner in DMs'
     guilds = ''
