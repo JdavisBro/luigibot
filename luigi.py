@@ -83,12 +83,14 @@ async def on_command_error(ctx, error):
     else:
         raise error
 
-async def addResponce(message):
+async def addResponce(message,content=None):
+    if content is None:
+        content = message.content
     question = bot.question[message.guild.id]
     answer = bot.answer[message.guild.id]
     msg = bot.msg[message.guild.id]
     embed = bot.embed[message.guild.id]
-    answer = answer.replace('{}', message.content + '{}')
+    answer = answer.replace('{}', content + '{}')
     embed.add_field(name="The current answer is", value="'{}'".format(answer.replace("{}","")))
     try:
         await message.add_reaction('✅')
@@ -148,7 +150,8 @@ async def on_message(message):
                     await addResponce(message)
                     didSomething = 2
                 elif message.content.lower() == 'space' and message.author != user and message.author != prevuser:
-                    await addResponce(message)
+
+                    await addResponce(message,'␣')
                     didSomething = 2
                 elif (message.content == f"<:{message.content.replace('<:','').replace('>','')}>" or message.content == f"<a:{message.content.replace('<a:','').replace('>','')}>") and message.author != user and message.author != prevuser:
                     await addResponce(message)
