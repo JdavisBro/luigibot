@@ -104,16 +104,11 @@ async def addResponce(message,content=None):
 async def messageExtras(message):
     if message.author.bot:
         return
-    if message.content.lower() == "inspire me":
+    if message.content.lower().startswith("inspire me"):
         await message.channel.trigger_typing()
         image_url = requests.get('http://inspirobot.me/api?generate=true').text
-        r = requests.get(image_url, stream=True)
-        if r.status_code == 200:
-            with open("image.jpg", 'w+b') as f:
-                r.raw.decode_content = True
-                shutil.copyfileobj(r.raw, f)
-                f.flush()
-        await message.channel.send(file=discord.File(open("image.jpg", "rb"),filename="Inspiration.jpg"))
+        embed = discord.Embed(colour=discord.Colour.from_rgb(random.randint(1,255),random.randint(1,255),random.randint(1,255))).set_image(url=image_url)
+        await message.channel.send(embed=embed)
         return
     if message.content.lower().startswith("if you are real say "):
         send=message.content.lower().replace("if you are real say ","")
