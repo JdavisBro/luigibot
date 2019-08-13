@@ -532,18 +532,20 @@ async def tz_current(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def reactors(ctx,emoji,messageid:int,channel:discord.TextChannel=None):
+async def reactors(ctx,emoji,messageid:int,channel:discord.TextChannel=None,randomise:int=None):
     channel = ctx.channel if channel is None else channel
     messages = await channel.history().flatten()
     message = discord.utils.get(messages,id=messageid)
-    reactors = ''
     for reaction in message.reactions:
         if str(reaction.emoji) == emoji:
             users = await reaction.users().flatten()
-            for user in users:
-                reactors += str(user)
-                reactors += '\n'
-            await ctx.send(reactors)
+            users = [str(user) for user in users]
+            msg = await ctx.send('\n'.join(users))
+            if randomise is not None:
+                for i in range(randomise):
+                    await asyncio.sleep(1)
+                    random.shuffle(users)
+                    await msg.edit(content="{}\n{}/{}".format('\n'.join(users),i+1,randomise))
             return
     await ctx.send("That emoji wasn't found on that message")
 
