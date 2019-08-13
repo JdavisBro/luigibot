@@ -532,15 +532,19 @@ async def tz_current(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def mee6xp(ctx,*,user: discord.Member=None):
-    """Gives the user's (you if left empty) exact MEE6 xp"""
-    if user is None:
-        user = ctx.author
-    responce = requests.get(f"https://mee6.xyz/api/plugins/levels/leaderboard/{ctx.guild.id}")
-    responce = responce.json()
-    responce = responce["players"]
-    for userdict in responce:
-        if userdict["username"] == user.name and userdict["discriminator"] == user.discriminator:
-            await ctx.send(f"Here's {user.display_name}'s exact MEE6 XP: {userdict['xp']}")
+async def reactors(ctx,emoji,messageid:int,channel:discord.TextChannel=None):
+    channel = ctx.channel if channel is None else channel
+    messages = await channel.history().flatten()
+    message = discord.utils.get(messages,id=messageid)
+    reactors = ''
+    for reaction in message.reactions:
+        if str(reaction.emoji) == emoji:
+            users = await reaction.users().flatten()
+            for user in users:
+                reactors += str(user)
+                reactors += '\n'
+            await ctx.send(reactors)
+            return
+    await ctx.send("That emoji wasn't found on that message")
 
 bot.run(TOKEN)
