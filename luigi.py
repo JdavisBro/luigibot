@@ -5,6 +5,7 @@ from textblob import TextBlob # Mood Command
 import pytz # Timezone command
 from pytz import timezone # Timezone command
 import requests, shutil # Inspire me command
+from variables import * # Get variables from variables.py
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -15,24 +16,26 @@ def jsonCheck(filename):
         logging.info("{filename}.json created.")
     except:
         logging.info(f"{filename}.json already exists or was unable to be created.")
+
 jsonCheck('prefixes')
 jsonCheck('timezones')
-jsonCheck('embeds')
-try: # TOKEN
-    TOKEN = sys.argv[1]
-except:
-    logging.warning("Unable to get token, you must put it as the first argument after the file name, e.g python luigi.py 'TOKEN' or you can edit the code directly.")
-    exit()
+#jsonCheck('embeds')
+
+if TOKEN is None:
+    try: # TOKEN
+        TOKEN = sys.argv[1]
+    except:
+        logging.warning("Unable to get token, you must put it as the first argument after the file name, e.g python luigi.py 'TOKEN' or you can edit the code directly.")
+        exit()
 with open("prefixes.json","r") as f:
     prefixes = json.load(f)
-
-default_prefix = 'o!' # DEFAULT PREFIX
 
 def prefix(bot, message):
     return str(prefixes.get(str(message.guild.id), default_prefix)) if message.guild != None else default_prefix
 
-bot = commands.Bot(command_prefix=prefix,description="A bot to replicate /r/askouija on Discord but also does more like\ninspire you (say inspire me)!\nLooks at your mood based on the last 15/200 messages in that channel.\nand can convert timezones.")
-bot.channel_names = ["ask-ouija","askouija","ouija","ouijaboard","ask-luigi","askluigi","luigiboard"]
+bot = commands.Bot(command_prefix=prefix,description=description)
+bot.channel_names = channel_names
+channel_names = None
 bot.update = 0
 on = {}
 bot.question = {}
@@ -41,9 +44,11 @@ bot.msg = {}
 bot.embed = {}
 bot.prevuser = {}
 bot.origauthor = {}
-bot.help_message = "Hello! I am LuigiBot (patent pending). I am a robot to replicate r/askouija on discord.\nTo be used I require a channel with one of the names as said on my github page's readme <https://www.github.com/jdavisbro/luigibot> permissions that I require or that are optional are also stated on that page. \nAfter that is sorted, asking a question is easy! Just go into the channel and type `{0}ask QUESTION` and I will wait for responses and add them.\nThe responses I look for are any one letter character (besides {{ and }}), 'space' for adding a space :| and goodbye for ending a question.\nOnce a question is ended I will pin the message to the channel, there is a limit to 50 pins though so I can't pin them all!\nThank you for coming to my TED talk. My prefix in this server is `{0}`"
+bot.help_message = help_message
+help_message = None
+
 try:
-    debug = True if sys.argv[2] == 'debug' else False
+    debug = True if sys.argv[2] == 'debug' or debug == True else False
     if debug:
         logging.warning("Debug mode is on, errors will stop commands but have more detail.")
 except:
@@ -57,7 +62,7 @@ def setBot(variable,value,guildid=None):
 
 @bot.event
 async def on_ready():
-    game = discord.Game(name=f'with my LuigiBoard. @{str(bot.user)}')
+    game = discord.Game(name=game_name.format(str(bot.user)))
     await bot.change_presence(status=discord.Status.online, activity=game)
     appinfo = await bot.application_info()
     setBot("appinfo",appinfo)
