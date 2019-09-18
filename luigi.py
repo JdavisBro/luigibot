@@ -33,7 +33,8 @@ with open("prefixes.json","r") as f:
 def prefix(bot, message):
     return str(prefixes.get(str(message.guild.id), default_prefix)) if message.guild != None else default_prefix
 
-bot = commands.Bot(command_prefix=prefix,description=description)
+game = discord.Game('Starting Up ⬆')
+bot = commands.Bot(command_prefix=prefix,description=description,activity=game)
 bot.channel_names = channel_names
 channel_names = None
 bot.update = 0
@@ -62,14 +63,18 @@ def setBot(variable,value,guildid=None):
 
 @bot.event
 async def on_ready():
-    game = discord.Game(name=game_name.format(str(bot.user)))
-    await bot.change_presence(status=discord.Status.online, activity=game)
     appinfo = await bot.application_info()
     setBot("appinfo",appinfo)
     setBot("startTime",time.time())
     logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
     logging.info('| Connected to DISCORD as {} -- {} |'.format(str(bot.user),bot.user.id))
     logging.info('-'*(32 + len(str(bot.user))+len(str(bot.user.id))))
+    await asyncio.sleep(0.3)
+    game = discord.Game('Started ✅')
+    await bot.change_presence(activity=game)
+    await asyncio.sleep(1.7)
+    game = discord.Game(name=game_name.format(str(bot.user)))
+    await bot.change_presence(status=discord.Status.online, activity=game)
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -141,17 +146,19 @@ async def on_message(message):
             prevuser = bot.prevuser[message.guild.id]
             user = bot.origauthor[message.guild.id]
             length = len(message.content)
-            if not message.author.bot:
+            if message.author.bot:
                 if length == 1 and message.author != user and message.author != prevuser and message.content != '{':
                     await addResponce(message)
                     didSomething = 2
                 elif message.content.lower() == 'space' and message.author != user and message.author != prevuser:
-
                     await addResponce(message,'␣')
                     didSomething = 2
                 elif (message.content == f"<:{message.content.replace('<:','').replace('>','')}>" or message.content == f"<a:{message.content.replace('<a:','').replace('>','')}>") and message.author != user and message.author != prevuser:
-                    await addResponce(message)
-                    didSomething = 2
+                    emoji_id = int(message.content[message.content.find(':',3)+1:].replace('>',''))
+                    emoji = bot.get_emoji(emoji_id)
+                    if emoji is not None:
+                        await addResponce(message,str(emoji))
+                        didSomething = 2
                 elif message.content.lower() == 'goodbye' and message.author != user and message.author != prevuser:
                     question = bot.question[message.guild.id]
                     answer = bot.answer[message.guild.id]
@@ -163,7 +170,7 @@ async def on_message(message):
                         answer = ' '
                     answer=answer.replace("␣"," ")
                     embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was: {}'.format(question), color=2151680)
-                    embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                    embed.set_author(name='Ouija Question!',icon_url='https://d30y9cdsu7xlg0.cloudfront.net/png/57788-200.png')
                     embed.add_field(name="The answer is", value="'{}'".format(answer.replace("{}","")))
                     msg1 = await message.channel.send("We have the answer to {}'s question!".format(user.mention))
                     pinme = await message.channel.send(embed=embed)
@@ -186,7 +193,7 @@ async def on_message(message):
         on[message.guild.id] = (message.channel.id if on[message.guild.id] != 0 else 0)
 
 class Ouija(commands.Cog):
-    def __init__(self,bot):
+    def __init__(self,bot): 
         self.bot = bot
 
     @commands.command()
@@ -210,7 +217,7 @@ class Ouija(commands.Cog):
                     setBot('answer',answer,ctx.guild.id)
                     setBot('prevuser','',ctx.guild.id)
                     embed = discord.Embed(title="A question has come in! Say one letter or 'space' to answer it! ", description=question, color=6363163)
-                    embed.set_author(name='Ouija Question!', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                    embed.set_author(name='Ouija Question!', icon_url='https://d30y9cdsu7xlg0.cloudfront.net/png/57788-200.png')
                     embed.add_field(name="The current answer is", value="'{}'".format(answer.replace("{}"," ")))
                     embed.set_footer(text='Question by {} ({})'.format(user.display_name,user))
                     try:
@@ -339,7 +346,7 @@ class Owner(commands.Cog):
                 if answer == '':
                     answer = ' '
                 embed = discord.Embed(title="We have the answer to {}'s question!".format(user.name), description='The question was: {}'.format(question), color=2151680)
-                embed.set_author(name='Ouija Question!', url='https://discord.gg/UGsdqwk', icon_url='https://www.fjordsafari.com/wp-content/uploads/2016/11/question-mark-4-xxl.png')
+                embed.set_author(name='Ouija Question!', icon_url='https://d30y9cdsu7xlg0.cloudfront.net/png/57788-200.png')
                 embed.add_field(name="The current answer is", value="'{}'".format(answer.replace("{}","")))
                 msg1 = await channel.send("We have the answer to {}'s question!".format(user.mention))
                 pinme = await channel.send(embed=embed)
@@ -616,4 +623,8 @@ class Other(commands.Cog):
 cogs = ['Ouija','Owner','Mod','Other']
 for cog in cogs:
     exec(f'bot.add_cog({cog}(bot))')
-bot.run(TOKEN)
+
+try:
+    bot.run(TOKEN)
+except KeyboardInterrupt:
+    logging.info('Shutting Down')
