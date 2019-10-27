@@ -146,7 +146,7 @@ async def on_message(message):
             prevuser = bot.prevuser[message.guild.id]
             user = bot.origauthor[message.guild.id]
             length = len(message.content)
-            if message.author.bot:
+            if not message.author.bot:
                 if length == 1 and message.author != user and message.author != prevuser and message.content != '{':
                     await addResponce(message)
                     didSomething = 2
